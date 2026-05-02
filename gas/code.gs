@@ -138,12 +138,20 @@ function setup() {
     });
     settingsSheet.getRange(1, 1, 1, 2).setFontWeight("bold").setBackground("#e0e0e0");
   } else {
-    // Check for missing keys in existing settings sheet
+    // Check for missing keys or update formFields if structure changed
     const data = settingsSheet.getDataRange().getValues();
     const existingKeys = data.map(row => row[0]);
+    
     Object.keys(DEFAULT_SETTINGS).forEach(key => {
-      if (!existingKeys.includes(key)) {
+      const rowIndex = existingKeys.indexOf(key);
+      if (rowIndex === -1) {
         settingsSheet.appendRow([key, DEFAULT_SETTINGS[key]]);
+      } else if (key === 'formFields') {
+        // Force update formFields if headers are missing
+        const currentValue = data[rowIndex][1];
+        if (typeof currentValue === 'string' && !currentValue.includes('"type":"header"')) {
+          settingsSheet.getRange(rowIndex + 1, 2).setValue(DEFAULT_SETTINGS[key]);
+        }
       }
     });
   }
