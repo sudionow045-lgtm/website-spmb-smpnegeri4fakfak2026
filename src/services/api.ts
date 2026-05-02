@@ -98,7 +98,7 @@ export interface AdminData extends RegistrationData {
 }
 
 // Helper to format date to YYYY-MM-DD for input fields
-const formatDateForInput = (dateString: any): string => {
+export const formatDateForInput = (dateString: any): string => {
   if (!dateString) return "";
   try {
     const date = new Date(dateString);
