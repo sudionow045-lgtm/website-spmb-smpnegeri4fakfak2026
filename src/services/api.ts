@@ -163,6 +163,7 @@ export const getInitialMockSettings = (): AppSettings => {
       { id: "Status Anak", label: "Status Anak", type: "select", options: ["Anak Kandung", "Anak Tiri", "Anak Angkat", "Keponakan", "Lainnya"], required: true },
       { id: "Tinggi Badan", label: "Tinggi Badan (cm)", type: "number", required: true },
       { id: "Berat Badan", label: "Berat Badan (kg)", type: "number", required: true },
+      { id: "Apakah Penerima KIP?", label: "Apakah Penerima KIP?", type: "select", option: ["Tidak", "Ya"], required: true },
       { id: "Jumlah Saudara Kandung", label: "Jumlah Saudara Kandung", type: "number", required: true },
 
       { id: "header6", label: "BERKAS", type: "header", required: false },
