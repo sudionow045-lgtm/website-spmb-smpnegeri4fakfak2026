@@ -116,7 +116,7 @@ export const getInitialMockSettings = (): AppSettings => {
     koordinatSekolah: "-2.9595913880821785, 132.3518155747581", // Lokasi SMP NEGERI 4 FAKFAK
     tanggalCutoffUsia: "2026-07-01", // Batas Tanggal Hitung Usia
     sambutanKepalaSekolah: "Selamat datang di website resmi SPMB SMP NEGERI 4 FAKFAK. Kami berkomitmen untuk memberikan pelayanan pendidikan terbaik bagi putra-putri Anda. Mari bergabung bersama kami untuk mencetak generasi penerus bangsa yang cerdas, berakhlak mulia, dan berprestasi.",
-    fotoKepalaSekolah: "https://i.imgur.com/CV6EKgh.jpeg",
+    fotoKepalaSekolah: "https://i.imgur.com/9wlgK8w.png",
     visiSekolah: "TERWUJUDNYA PESERTA DIDIK YANG BERIMAN, BERTAKWA KEPADA TUHAN YANG MAHA ESA DAN MEMILIKI CIPTA, RASA, KARSA YANG BERKARAKTER PANCASILA",
     misiSekolah: "1. Mengembangkan keimanan dan ketaqwaan Terhadap Tuhan Yang Maha Esa.\n2. Mengembangkan sikap Disiplin, jujur, mandiri dan bertanggungjawab berdasarkan nilai-nilai Pancasila serta budaya kearifan lokal.\n3. Mengembangkan sikap salam, senyum, sapa, sopan dan santun (5S)\n4. Mengembangkan kegiatan literasi dan numerasi peserta didik.\n5. Mengembangkan Ilmu pengetahuan dan teknologi di lingkungan sekolah.",
     formFields: [
