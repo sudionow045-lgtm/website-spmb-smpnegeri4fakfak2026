@@ -1,0 +1,5 @@
+{
+  "name": "WEB SPMB",
+  "description": "",
+  "requestFramePermissions": ["geolocation"]
+}
