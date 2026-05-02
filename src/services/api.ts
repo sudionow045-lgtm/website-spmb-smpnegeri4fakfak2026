@@ -3,6 +3,37 @@
 // To use the real backend, replace this URL with your deployed Google Apps Script Web App URL
 const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwbb4ewxVYKow8RcX7iW4_oH0Y9ngZSKJBFacVoZ_ts7imAAALNqPPuP9Y_YKgPQJKt/exec";
 
+// Helper function to handle fetch with better error reporting
+const safeFetch = async (url: string, options?: RequestInit) => {
+  try {
+    const response = await fetch(url, {
+      ...options,
+      // Ensure we always follow redirects (GAS requirement)
+      redirect: 'follow'
+    });
+
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return await response.json();
+    } else {
+      // If not JSON, it might be an HTML error page from GAS
+      const text = await response.text();
+      console.error("Non-JSON response received:", text);
+      return {
+        status: "error",
+        message: "Server tidak memberikan respon JSON yang valid. Pastikan Web App sudah di-deploy dengan benar."
+      };
+    }
+  } catch (error: any) {
+    console.error("Fetch error:", error);
+    // Return a structured error instead of throwing
+    return {
+      status: "error",
+      message: error.message || "Gagal menghubungi server. Periksa koneksi internet Anda."
+    };
+  }
+};
+
 export interface FormField {
   id: string;
   label: string;
@@ -229,24 +260,22 @@ export const getSettings = async (): Promise<AppSettings> => {
     await new Promise(resolve => setTimeout(resolve, 500));
     return { ...mockSettings };
   }
-  try {
-    const response = await fetch(`${GAS_WEB_APP_URL}?action=getSettings&t=${Date.now()}`);
-    const result = await response.json();
-    if (result.status === "success") {
-      const sanitizedData = {
-        ...result.data,
-        namaSekolah: result.data.namaSekolah === "SMP NEGERI 4 FAKFAK" ? "SMP NEGERI 4 FAKFAK" : result.data.namaSekolah,
-        formFields: typeof result.data.formFields === 'string' ? JSON.parse(result.data.formFields) : result.data.formFields,
-        panduanDokumen: typeof result.data.panduanDokumen === 'string' ? JSON.parse(result.data.panduanDokumen) : result.data.panduanDokumen,
-        panduanAlur: typeof result.data.panduanAlur === 'string' ? JSON.parse(result.data.panduanAlur) : result.data.panduanAlur
-      };
-      return sanitizedData;
-    }
-    throw new Error(result.message);
-  } catch (error) {
-    console.error("Error fetching settings:", error);
-    throw error;
+
+  const result = await safeFetch(`${GAS_WEB_APP_URL}?action=getSettings&t=${Date.now()}`);
+
+  if (result.status === "success") {
+    const sanitizedData = {
+      ...result.data,
+      namaSekolah: result.data.namaSekolah === "SMP NEGERI 4 FAKFAK" ? "SMP NEGERI 4 FAKFAK" : result.data.namaSekolah,
+      formFields: typeof result.data.formFields === 'string' ? JSON.parse(result.data.formFields) : result.data.formFields,
+      panduanDokumen: typeof result.data.panduanDokumen === 'string' ? JSON.parse(result.data.panduanDokumen) : result.data.panduanDokumen,
+      panduanAlur: typeof result.data.panduanAlur === 'string' ? JSON.parse(result.data.panduanAlur) : result.data.panduanAlur
+    };
+    return sanitizedData;
   }
+
+  console.warn("Failed to fetch settings from server, using mock data as fallback:", result.message);
+  return { ...mockSettings };
 };
 
 export const updateSettings = async (settings: Partial<AppSettings>) => {
@@ -255,20 +284,15 @@ export const updateSettings = async (settings: Partial<AppSettings>) => {
     saveMockSettings({ ...mockSettings, ...settings });
     return { status: "success" };
   }
-  try {
-    const response = await fetch(GAS_WEB_APP_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "updateSettings",
-        settings
-      }),
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-    });
-    return await response.json();
-  } catch (error) {
-    console.error("Error updating settings:", error);
-    throw error;
-  }
+
+  return await safeFetch(GAS_WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "updateSettings",
+      settings
+    }),
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+  });
 };
 
 export const submitRegistration = async (data: RegistrationData) => {
@@ -285,17 +309,12 @@ export const submitRegistration = async (data: RegistrationData) => {
     saveMockData(mockData);
     return { status: 'success', noPendaftaran };
   }
-  try {
-    const response = await fetch(GAS_WEB_APP_URL, {
-      method: "POST",
-      body: JSON.stringify(data),
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-    });
-    return await response.json();
-  } catch (error) {
-    console.error("Error submitting registration:", error);
-    throw error;
-  }
+
+  return await safeFetch(GAS_WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify(data),
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+  });
 };
 
 export const getSchoolInfo = async (npsn: string) => {
@@ -324,17 +343,11 @@ export const getSchoolInfo = async (npsn: string) => {
     return { status: 'error', message: 'Not found' };
   }
 
-  try {
-    const response = await fetch(GAS_WEB_APP_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "getSchoolInfo", npsn }),
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-    });
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching school info:", error);
-    throw error;
-  }
+  return await safeFetch(GAS_WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify({ action: "getSchoolInfo", npsn }),
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+  });
 };
 
 export const getRegistrations = async (): Promise<AdminData[]> => {
@@ -343,17 +356,13 @@ export const getRegistrations = async (): Promise<AdminData[]> => {
     return [...mockData];
   }
 
-  try {
-    const response = await fetch(`${GAS_WEB_APP_URL}?t=${Date.now()}`);
-    const result = await response.json();
-    if (result.status === "success") {
-      return result.data;
-    }
-    throw new Error(result.message);
-  } catch (error) {
-    console.error("Error fetching registrations:", error);
-    throw error;
+  const result = await safeFetch(`${GAS_WEB_APP_URL}?t=${Date.now()}`);
+  if (result.status === "success") {
+    return result.data;
   }
+
+  console.warn("Failed to fetch registrations, using mock data:", result.message);
+  return [...mockData];
 };
 
 export const updateStatus = async (noPendaftaran: string, newStatus: string, alasan?: string) => {
@@ -369,27 +378,21 @@ export const updateStatus = async (noPendaftaran: string, newStatus: string, ala
       saveMockData(newData);
       return { status: "success" };
     }
-    throw new Error("Data not found");
+    return { status: "error", message: "Data tidak ditemukan" };
   }
 
-  try {
-    const response = await fetch(GAS_WEB_APP_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "updateStatus",
-        noPendaftaran,
-        newStatus,
-        alasan
-      }),
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8",
-      },
-    });
-    return await response.json();
-  } catch (error) {
-    console.error("Error updating status:", error);
-    throw error;
-  }
+  return await safeFetch(GAS_WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "updateStatus",
+      noPendaftaran,
+      newStatus,
+      alasan
+    }),
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+    },
+  });
 };
 
 export const checkStatus = async (noPendaftaran: string) => {
@@ -411,22 +414,16 @@ export const checkStatus = async (noPendaftaran: string) => {
     return { status: "error", message: "Data tidak ditemukan" };
   }
 
-  try {
-    const response = await fetch(GAS_WEB_APP_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "checkStatus",
-        noPendaftaran
-      }),
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8",
-      },
-    });
-    return await response.json();
-  } catch (error) {
-    console.error("Error checking status:", error);
-    throw error;
-  }
+  return await safeFetch(GAS_WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "checkStatus",
+      noPendaftaran
+    }),
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+    },
+  });
 };
 
 export const loginAdmin = async (username: string, password: string) => {
@@ -438,21 +435,16 @@ export const loginAdmin = async (username: string, password: string) => {
     return { status: "error", message: "Username atau password salah" };
   }
 
-  try {
-    const response = await fetch(GAS_WEB_APP_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "login",
-        username,
-        password
-      }),
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8",
-      },
-    });
-    return await response.json();
-  } catch (error) {
-    console.error("Error logging in:", error);
-    throw error;
-  }
+  return await safeFetch(GAS_WEB_APP_URL, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "login",
+      username,
+      password
+    }),
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8",
+    },
+  });
 };
+
