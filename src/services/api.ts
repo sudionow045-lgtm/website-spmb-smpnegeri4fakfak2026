@@ -210,6 +210,7 @@ export const getInitialMockSettings = (): AppSettings => {
       const hasHeaderImg = parsed.gambarHeaderBeranda === "https://i.imgur.com/dyUirbi.jpeg";
       const hasNewRequirements = parsed.persyaratanDaftarUlang?.includes("Sertifikat TKA (1 Lembar)");
       const isWrongSchoolName = parsed.namaSekolah !== "SMP NEGERI 4 FAKFAK";
+      const isWrongCutoffDate = parsed.tanggalCutoffUsia !== "2026-07-01";
 
       if (!hasNPSN || !hasTKA || !hasKIP || !hasStatusAnak || !hasHeaders || !hasNamaIbu || !hasHeaderImg || !hasNewRequirements || isWrongSchoolName) {
         // Jika tidak ditemukan atau nama sekolah salah/lama, hapus local storage untuk memaksa reload pengaturan default baru
