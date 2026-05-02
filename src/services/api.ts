@@ -212,7 +212,7 @@ export const getInitialMockSettings = (): AppSettings => {
       const isWrongSchoolName = parsed.namaSekolah !== "SMP NEGERI 4 FAKFAK";
       const isWrongCutoffDate = parsed.tanggalCutoffUsia !== "2026-07-01";
 
-      if (!hasNPSN || !hasTKA || !hasKIP || !hasStatusAnak || !hasHeaders || !hasNamaIbu || !hasHeaderImg || !hasNewRequirements || isWrongSchoolName) {
+      if (!hasNPSN || !hasTKA || !hasKIP || !hasStatusAnak || !hasHeaders || !hasNamaIbu || !hasHeaderImg || !hasNewRequirements || isWrongSchoolName || isWrongCutoffDate) {
         // Jika tidak ditemukan atau nama sekolah salah/lama, hapus local storage untuk memaksa reload pengaturan default baru
         localStorage.removeItem('mockSettings');
         return defaultSettings;
