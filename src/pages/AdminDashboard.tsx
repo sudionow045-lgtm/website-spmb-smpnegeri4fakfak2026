@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import { getRegistrations, updateStatus, AdminData, updateSettings } from '../services/api';
+import { getRegistrations, updateStatus, AdminData, updateSettings, formatDateForInput } from '../services/api';
 import { cn } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { useSettings } from '../context/SettingsContext';
@@ -229,6 +229,7 @@ export default function AdminDashboard() {
       if (tglLahir) {
         formattedItem['Tanggal Lahir'] = formatDate(tglLahir);
         formattedItem['Usia'] = calculateAge(tglLahir, settings?.tanggalCutoffUsia);
+        formattedItem['Batas Tanggal Hitung Usia'] = formatDate(settings?.tanggalCutoffUsia || '');
       }
 
       if (item['Koordinat Lokasi']) {
@@ -474,6 +475,7 @@ export default function AdminDashboard() {
                       <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">No. Pendaftaran</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Nama Lengkap</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Usia</th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Batas Hitung Usia</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Jarak</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">NIK</th>
                       <th scope="col" className="px-6 py-3 text-left text-xs font-bold uppercase tracking-wider">Status</th>
@@ -513,6 +515,9 @@ export default function AdminDashboard() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             {calculateAge(getFieldValue(item, 'Tanggal Lahir'), settings?.tanggalCutoffUsia)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            {formatDate(settings?.tanggalCutoffUsia || '')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             {item['Jarak ke Sekolah (km)'] ? `${item['Jarak ke Sekolah (km)']} km` : '-'}
@@ -698,7 +703,7 @@ export default function AdminDashboard() {
                       <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Batas Tanggal Hitung Usia</label>
                       <input
                         type="date"
-                        value={localSettings.tanggalCutoffUsia || ''}
+                        value={formatDateForInput(localSettings.tanggalCutoffUsia)}
                         onChange={e => setLocalSettings({ ...localSettings, tanggalCutoffUsia: e.target.value })}
                         className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                       />
@@ -787,7 +792,7 @@ export default function AdminDashboard() {
                       <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Tanggal Pengumuman Kelulusan</label>
                       <input
                         type="date"
-                        value={localSettings.tanggalPengumuman || ''}
+                        value={formatDateForInput(localSettings.tanggalPengumuman)}
                         onChange={e => setLocalSettings({ ...localSettings, tanggalPengumuman: e.target.value })}
                         className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                       />
@@ -804,7 +809,7 @@ export default function AdminDashboard() {
                         <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Tanggal Daftar Ulang</label>
                         <input
                           type="date"
-                          value={localSettings.tanggalDaftarUlang || ''}
+                          value={formatDateForInput(localSettings.tanggalDaftarUlang)}
                           onChange={e => setLocalSettings({ ...localSettings, tanggalDaftarUlang: e.target.value })}
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                         />
