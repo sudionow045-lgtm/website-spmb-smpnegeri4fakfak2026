@@ -17,8 +17,8 @@ const DEFAULT_FORM_FIELDS = [
   // --- DATA IDENTITAS PESERTA DIDIK ---
   { id: "Nama Lengkap", label: "Nama Lengkap (Sesuai Ijazah/Akta)", type: "text", required: true },
   { id: "Jenis Kelamin", label: "Jenis Kelamin", type: "select", options: ["Laki-laki", "Perempuan"], required: true },
-  { id: "NISN", label: "NISN", type: "text", required: true },
-  { id: "NIK", label: "NIK / No. KITAS (Untuk WNA)", type: "text", required: true },
+  { id: "NISN", label: "NISN", type: "number", required: true },
+  { id: "NIK", label: "NIK / No. KITAS (Untuk WNA)", type: "number", required: true },
   { id: "Tempat Lahir", label: "Tempat Lahir", type: "text", required: true },
   { id: "Tanggal Lahir", label: "Tanggal Lahir", type: "date", required: true },
   { id: "Agama", label: "Agama & Kepercayaan", type: "select", options: ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Khonghucu", "Lainnya"], required: true },
@@ -26,16 +26,16 @@ const DEFAULT_FORM_FIELDS = [
   
   // --- DATA ALAMAT ---
   { id: "Alamat Lengkap", label: "Alamat Jalan / Dusun", type: "textarea", required: true },
-  { id: "RT", label: "RT", type: "text", required: true },
-  { id: "RW", label: "RW", type: "text", required: true },
+  { id: "RT", label: "RT", type: "number", required: true },
+  { id: "RW", label: "RW", type: "number", required: true },
   { id: "Desa/Kelurahan", label: "Desa / Kelurahan", type: "text", required: true },
   { id: "Kecamatan", label: "Kecamatan", type: "text", required: true },
-  { id: "Kode Pos", label: "Kode Pos", type: "text", required: true },
+  { id: "Kode Pos", label: "Kode Pos", type: "number", required: true },
   { id: "Jenis Tinggal", label: "Jenis Tinggal", type: "select", options: ["Bersama Orang Tua", "Wali", "Kos", "Asrama", "Panti Asuhan", "Lainnya"], required: true },
   { id: "Alat Transportasi", label: "Alat Transportasi ke Sekolah", type: "select", options: ["Jalan kaki", "Kendaraan pribadi", "Kendaraan umum", "Jemputan sekolah", "Kereta api", "Ojek", "Andong/Bendi/Sado/Kuda", "Perahu penyeberangan", "Lainnya"], required: true },
   
   // --- DATA SEKOLAH ASAL ---
-  { id: "NPSN Sekolah", label: "NPSN Sekolah Asal", type: "text", required: true },
+  { id: "NPSN Sekolah", label: "NPSN Sekolah Asal", type: "number", required: true },
   { id: "Asal Sekolah", label: "Nama Sekolah Asal (SD/MI)", type: "text", required: true },
   
   // --- DATA ORANG TUA / WALI ---
