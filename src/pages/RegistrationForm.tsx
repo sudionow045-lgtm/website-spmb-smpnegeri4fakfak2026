@@ -279,6 +279,8 @@ export default function RegistrationForm() {
     const commonClasses = "w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors";
 
     switch (field.type) {
+      case 'header':
+        return null;
       case 'textarea':
         return (
           <textarea
@@ -407,17 +409,19 @@ export default function RegistrationForm() {
           <form onSubmit={handleSubmit} className="p-8 space-y-10">
 
             {(() => {
+              if (!settings?.formFields || !Array.isArray(settings.formFields)) return null;
+
               const elements: React.ReactNode[] = [];
               let currentGroup: FormField[] = [];
               let currentHeader: FormField | null = null;
 
-              const renderGroup = (header: FormField | null, fields: FormField[]) => {
+              const renderGroup = (header: FormField | null, fields: FormField[], groupIdx: number) => {
                 if (fields.length === 0 && !header) return null;
 
                 const isFileGroup = fields.some(f => f.type === 'file');
 
                 return (
-                  <div key={header?.id || 'group-none'} className="space-y-6">
+                  <div key={header?.id || `group-${groupIdx}`} className="space-y-6">
                     {header && (
                       <div className="pt-4 first:pt-0">
                         <h3 className="text-lg font-bold text-slate-900 border-b-2 border-blue-500 pb-2 mb-6 flex items-center gap-2 uppercase tracking-wide">
@@ -426,13 +430,11 @@ export default function RegistrationForm() {
                       </div>
                     )}
                     <div className={isFileGroup ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "grid grid-cols-1 md:grid-cols-2 gap-6"}>
-                      {fields.map(field => (
-                        <div key={field.id} className={field.type === 'textarea' || field.type === 'header' ? 'col-span-1 md:col-span-2' : ''}>
-                          {field.type !== 'header' && (
-                            <label className="block text-sm font-medium text-slate-700 mb-1">
-                              {field.label} {field.required && '*'}
-                            </label>
-                          )}
+                      {fields.map((field, fIdx) => (
+                        <div key={field.id || `${groupIdx}-${fIdx}`} className={field.type === 'textarea' ? 'col-span-1 md:col-span-2' : ''}>
+                          <label className="block text-sm font-medium text-slate-700 mb-1">
+                            {field.label} {field.required && '*'}
+                          </label>
                           {renderField(field)}
 
                           {field.id === 'Kode Pos' && (
@@ -453,10 +455,11 @@ export default function RegistrationForm() {
                 );
               };
 
-              settings?.formFields?.forEach((field, idx) => {
+              let groupCount = 0;
+              settings.formFields.forEach((field) => {
                 if (field.type === 'header') {
                   if (currentHeader || currentGroup.length > 0) {
-                    elements.push(renderGroup(currentHeader, currentGroup));
+                    elements.push(renderGroup(currentHeader, currentGroup, groupCount++));
                   }
                   currentHeader = field;
                   currentGroup = [];
@@ -466,7 +469,7 @@ export default function RegistrationForm() {
               });
 
               if (currentHeader || currentGroup.length > 0) {
-                elements.push(renderGroup(currentHeader, currentGroup));
+                elements.push(renderGroup(currentHeader, currentGroup, groupCount++));
               }
 
               return elements;
