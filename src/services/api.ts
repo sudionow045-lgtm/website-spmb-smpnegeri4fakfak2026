@@ -200,6 +200,12 @@ export const getInitialMockSettings = (): AppSettings => {
   if (stored) {
     try {
       const parsed = JSON.parse(stored);
+      // Force update cutoff date if it's missing or wrong
+      if (!parsed.tanggalCutoffUsia || parsed.tanggalCutoffUsia !== "2026-07-01") {
+        parsed.tanggalCutoffUsia = "2026-07-01";
+        localStorage.setItem('mockSettings', JSON.stringify(parsed));
+      }
+
       // Ensure NPSN, Asal Sekolah, Sertifikat TKA, Status Anak, and Header Image fields exist
       const hasNPSN = parsed.formFields?.some((f: any) => f.id === "NPSN Sekolah");
       const hasTKA = parsed.formFields?.some((f: any) => f.id === "Sertifikat TKA Lulusan 2026");
@@ -271,6 +277,7 @@ export const getSettings = async (): Promise<AppSettings> => {
     const sanitizedData = {
       ...mockSettings,
       ...result.data,
+      tanggalCutoffUsia: result.data.tanggalCutoffUsia || "2026-07-01",
       namaSekolah: result.data.namaSekolah === "SMP NEGERI 4 FAKFAK" ? "SMP NEGERI 4 FAKFAK" : (result.data.namaSekolah || mockSettings.namaSekolah),
       formFields: typeof result.data.formFields === 'string' ? JSON.parse(result.data.formFields) : (result.data.formFields || mockSettings.formFields),
       panduanDokumen: typeof result.data.panduanDokumen === 'string' ? JSON.parse(result.data.panduanDokumen) : (result.data.panduanDokumen || mockSettings.panduanDokumen),
