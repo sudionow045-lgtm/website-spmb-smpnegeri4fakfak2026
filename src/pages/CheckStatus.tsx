@@ -35,8 +35,8 @@ export default function CheckStatus() {
       } else {
         setError(response.message || 'Data tidak ditemukan');
       }
-    } catch (err) {
-      setError('Terjadi kesalahan saat menghubungi server');
+    } catch (err: any) {
+      setError(err.message || 'Terjadi kesalahan saat menghubungi server');
     } finally {
       setIsLoading(false);
     }
