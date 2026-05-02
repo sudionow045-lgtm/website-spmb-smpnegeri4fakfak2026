@@ -275,7 +275,7 @@ export default function RegistrationForm() {
     );
   }
 
-  const renderField = (field: any) => {
+  const renderField = (field: FormField) => {
     const commonClasses = "w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors";
 
     switch (field.type) {
