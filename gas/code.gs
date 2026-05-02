@@ -14,7 +14,7 @@ const SETTINGS_SHEET_NAME = "Pengaturan";
 const FOLDER_NAME = "SPMB SMP";
 
 const DEFAULT_FORM_FIELDS = [
-  // --- DATA IDENTITAS PESERTA DIDIK ---
+  { id: "header_identitas", label: "DATA IDENTITAS PESERTA DIDIK", type: "header" },
   { id: "Nama Lengkap", label: "Nama Lengkap (Sesuai Ijazah/Akta)", type: "text", required: true },
   { id: "Jenis Kelamin", label: "Jenis Kelamin", type: "select", options: ["Laki-laki", "Perempuan"], required: true },
   { id: "NISN", label: "NISN", type: "number", required: true },
@@ -24,7 +24,7 @@ const DEFAULT_FORM_FIELDS = [
   { id: "Agama", label: "Agama & Kepercayaan", type: "select", options: ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Khonghucu", "Lainnya"], required: true },
   { id: "Kewarganegaraan", label: "Kewarganegaraan", type: "select", options: ["Indonesia (WNI)", "Asing (WNA)"], required: true },
   
-  // --- DATA ALAMAT ---
+  { id: "header_alamat", label: "DATA ALAMAT", type: "header" },
   { id: "Alamat Lengkap", label: "Alamat Jalan / Dusun", type: "textarea", required: true },
   { id: "RT", label: "RT", type: "number", required: true },
   { id: "RW", label: "RW", type: "number", required: true },
@@ -34,11 +34,11 @@ const DEFAULT_FORM_FIELDS = [
   { id: "Jenis Tinggal", label: "Jenis Tinggal", type: "select", options: ["Bersama Orang Tua", "Wali", "Kos", "Asrama", "Panti Asuhan", "Lainnya"], required: true },
   { id: "Alat Transportasi", label: "Alat Transportasi ke Sekolah", type: "select", options: ["Jalan kaki", "Kendaraan pribadi", "Kendaraan umum", "Jemputan sekolah", "Kereta api", "Ojek", "Andong/Bendi/Sado/Kuda", "Perahu penyeberangan", "Lainnya"], required: true },
   
-  // --- DATA SEKOLAH ASAL ---
+  { id: "header_sekolah", label: "DATA SEKOLAH ASAL", type: "header" },
   { id: "NPSN Sekolah", label: "NPSN Sekolah Asal", type: "number", required: true },
   { id: "Asal Sekolah", label: "Nama Sekolah Asal (SD/MI)", type: "text", required: true },
   
-  // --- DATA ORANG TUA / WALI ---
+  { id: "header_ortu", label: "DATA ORANG TUA / WALI", type: "header" },
   { id: "Nama Ayah Kandung", label: "Nama Ayah Kandung", type: "text", required: true },
   { id: "Pekerjaan Ayah Kandung", label: "Pekerjaan Ayah Kandung", type: "select", options: ["Tidak Bekerja", "Nelayan", "Petani", "Peternak", "PNS/TNI/Polri", "Karyawan Swasta", "Pedagang Kecil", "Pedagang Besar", "Wiraswasta", "Buruh", "Pensiunan", "Lainnya"], required: true },  
   { id: "Pendidikan Ayah Kandung", label: "Pendidikan Terakhir Ayah Kandung", type: "select", options: ["Tidak Sekolah", "Putus SD", "SD Sederajat", "SMP Sederajat", "SMA Sederajat", "D1", "D2", "D3", "D4/S1", "S2", "S3"], required: true },
@@ -52,14 +52,14 @@ const DEFAULT_FORM_FIELDS = [
   
   { id: "No. WhatsApp Aktif", label: "No. WhatsApp Aktif (Untuk Informasi)", type: "number", required: true },
   
-  // --- DATA PERIODIK ---
+  { id: "header_periodik", label: "DATA PERIODIK", type: "header" },
   { id: "Status Anak", label: "Status Anak", type: "select", options: ["Anak Kandung", "Anak Tiri", "Anak Angkat", "Keponakan", "Lainnya"], required: true },
   { id: "Tinggi Badan", label: "Tinggi Badan (cm)", type: "number", required: true },
   { id: "Berat Badan", label: "Berat Badan (kg)", type: "number", required: true },
   { id: "Apakah Penerima KIP?", label: "Apakah Penerima KIP?", type: "select", option: ["Tidak", "Ya"], required: true },
   { id: "Jumlah Saudara Kandung", label: "Jumlah Saudara Kandung", type: "number", required: true },
   
-  // --- BERKAS ---
+  { id: "header_berkas", label: "BERKAS", type: "header" },
   { id: "Pas Foto 3x4", label: "Pas Foto 3x4 (Seragam SD)", type: "file", required: true },
   { id: "Kartu Keluarga", label: "Kartu Keluarga", type: "file", required: false },
   { id: "Akta Kelahiran", label: "Akta Kelahiran", type: "file", required: false },
