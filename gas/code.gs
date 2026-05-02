@@ -50,7 +50,7 @@ const DEFAULT_FORM_FIELDS = [
   { id: "Penghasilan Ibu Kandung", label: "Penghasilan Ibu Kandung", type: "select", options: ["Kurang dari 500.000", "500.000 - 999.999", "1.000.000 - 1.999.999", "2.000.000 - 4.999.999", "5.000.000 - 20.000.000", "Lebih dari 20.000.000"], required: true },
   { id: "Tahun Lahir Ibu Kandung", label: "Tahun Lahir Ibu Kandung", type: "date", required: true },
   
-  { id: "No. WhatsApp Aktif", label: "No. WhatsApp Aktif (Untuk Informasi)", type: "text", required: true },
+  { id: "No. WhatsApp Aktif", label: "No. WhatsApp Aktif (Untuk Informasi)", type: "number", required: true },
   
   // --- DATA PERIODIK ---
   { id: "Status Anak", label: "Status Anak", type: "select", options: ["Anak Kandung", "Anak Tiri", "Anak Angkat", "Keponakan", "Lainnya"], required: true },
