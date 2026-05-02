@@ -75,7 +75,7 @@ const DEFAULT_SETTINGS = {
     deskripsi: "Mencetak generasi penerus bangsa yang cerdas, berakhlak mulia, dan siap menghadapi tantangan masa depan dengan pendidikan berkualitas.",
   statusPendaftaran: "Buka",
   logoSekolah: "https://iili.io/3tdgMhb.png",
-  fotoKepalaSekolah: "https://i.imgur.com/IsRemqW.jpeg",
+  fotoKepalaSekolah: "https://i.imgur.com/CV6EKgh.jpeg",
   sambutanKepalaSekolah: "Selamat datang di website resmi SPMB SMP NEGERI 4 FAKFAK. Kami berkomitmen untuk memberikan pelayanan pendidikan terbaik bagi putra-putri Anda. Mari bergabung bersama kami untuk mencetak generasi penerus bangsa yang cerdas, berakhlak mulia, dan berprestasi.",
   koordinatSekolah: "-2.9595913880821785, 132.3518155747581",
   visiSekolah: "TERWUJUDNYA PESERTA DIDIK YANG BERIMAN, BERTAKWA KEPADA TUHAN YANG MAHA ESA DAN MEMILIKI CIPTA, RASA, KARSA YANG BERKARAKTER PANCASILA",
