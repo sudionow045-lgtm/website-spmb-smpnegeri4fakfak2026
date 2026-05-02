@@ -42,13 +42,12 @@ const DEFAULT_FORM_FIELDS = [
   { id: "Nama Ayah Kandung", label: "Nama Ayah Kandung", type: "text", required: true },
   { id: "Pekerjaan Ayah Kandung", label: "Pekerjaan Ayah Kandung", type: "select", options: ["Tidak Bekerja", "Nelayan", "Petani", "Peternak", "PNS/TNI/Polri", "Karyawan Swasta", "Pedagang Kecil", "Pedagang Besar", "Wiraswasta", "Buruh", "Pensiunan", "Lainnya"], required: true },  
   { id: "Pendidikan Ayah Kandung", label: "Pendidikan Terakhir Ayah Kandung", type: "select", options: ["Tidak Sekolah", "Putus SD", "SD Sederajat", "SMP Sederajat", "SMA Sederajat", "D1", "D2", "D3", "D4/S1", "S2", "S3"], required: true },
-  { id: "Penghasilan Ayah Kandung", label: "Panan Ayah Kanan Ayah Kandung", type: "select", options: ["Kurang dari 500.000", "500.000 - 999.999", "1.000.000 - 1.999.999", "2.000.000 - 4.999.999", "5.000.000 - 20.000.000", "Lebih dari 20.000.000"], required: true },
+  { id: "Penghasilan Ayah Kandung", label: "Penghasilan Ayah Kandung", type: "select", options: ["Kurang dari 500.000", "500.000 - 999.999", "1.000.000 - 1.999.999", "2.000.000 - 4.999.999", "5.000.000 - 20.000.000", "Lebih dari 20.000.000"], required: true },
   { id: "Tahun Lahir Ayah Kandung", label: "Tahun Lahir Ayah Kandung", type: "date", required: true },
    
   { id: "Pekerjaan Ibu Kandung", label: "Pekerjaan Ibu Kandung", type: "select", options: ["Ibu Rumah Tangga", "Nelayan", "Petani", "Peternak", "PNS/TNI/Polri", "Karyawan Swasta", "Pedagang Kecil", "Pedagang Besar", "Wiraswasta", "Buruh", "Pensiunan", "Lainnya"], required: true },
   { id: "Pendidikan Ibu Kandung", label: "Pendidikan Terakhir Ibu Kandung", type: "select", options: ["Tidak Sekolah", "Putus SD", "SD Sederajat", "SMP Sederajat", "SMA Sederajat", "D1", "D2", "D3", "D4/S1", "S2", "S3"], required: true },
-  { id: "Pendidikan Ibu Kandung", label: "Pendidikan Terakhir Ibu Kandung", type: "select", options: ["Tidak Sekolah", "Putus SD", "SD Sederajat", "SMP Sederajat", "SMA Sederajat", "D1", "D2", "D3", "D4/S1", "S2", "S3"], required: true },
-  { id: "Penghasilan Ibu Kandung", label: "Pengahasilan Ibu Kandung", type: "select", options: ["Kurang dari 500.000", "500.000 - 999.999", "1.000.000 - 1.999.999", "2.000.000 - 4.999.999", "5.000.000 - 20.000.000", "Lebih dari 20.000.000"], required: true },
+  { id: "Penghasilan Ibu Kandung", label: "Penghasilan Ibu Kandung", type: "select", options: ["Kurang dari 500.000", "500.000 - 999.999", "1.000.000 - 1.999.999", "2.000.000 - 4.999.999", "5.000.000 - 20.000.000", "Lebih dari 20.000.000"], required: true },
   { id: "Tahun Lahir Ibu Kandung", label: "Tahun Lahir Ibu Kandung", type: "date", required: true },
   
   { id: "No. WhatsApp Aktif", label: "No. WhatsApp Aktif (Untuk Informasi)", type: "text", required: true },
