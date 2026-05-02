@@ -96,8 +96,8 @@ export default function AdminDashboard() {
   const [isSavingSettings, setIsSavingSettings] = useState(false);
   const [localSettings, setLocalSettings] = useState(settings);
 
-  const getFieldValue = (item: any, fieldId: string) => {
-    const field = settings?.formFields?.find(f => f.id === fieldId);
+  const getFieldValue = (item: AdminData, fieldId: string) => {
+    const field = settings?.formFields?.find((f) => f.id === fieldId);
     if (field && item[field.label] !== undefined) {
       return item[field.label];
     }
@@ -162,7 +162,7 @@ export default function AdminDashboard() {
           showCancelButton: true,
           confirmButtonText: 'Simpan',
           cancelButtonText: 'Batal',
-          inputValidator: (value) => {
+          inputValidator: (value: string) => {
             if (!value) {
               return 'Alasan harus diisi!';
             }
@@ -181,12 +181,12 @@ export default function AdminDashboard() {
 
       await updateStatus(noPendaftaran, newStatus, alasan);
 
-      setData(prev => prev.map(item =>
+      setData((prev: AdminData[]) => prev.map((item: AdminData) =>
         item['No Pendaftaran'] === noPendaftaran ? { ...item, Status: newStatus as any, 'Alasan Penolakan': alasan } : item
       ));
 
       if (selectedStudent && selectedStudent['No Pendaftaran'] === noPendaftaran) {
-        setSelectedStudent(prev => prev ? { ...prev, Status: newStatus as any, 'Alasan Penolakan': alasan } : null);
+        setSelectedStudent((prev: AdminData | null) => prev ? { ...prev, Status: newStatus as any, 'Alasan Penolakan': alasan } : null);
       }
 
       Swal.fire({
@@ -222,8 +222,8 @@ export default function AdminDashboard() {
   };
 
   const exportToExcel = () => {
-    const exportData = data.map(item => {
-      const formattedItem: any = { ...item };
+    const exportData = data.map((item: AdminData) => {
+      const formattedItem: Record<string, any> = { ...item };
 
       const tglLahir = getFieldValue(item, 'Tanggal Lahir');
       if (tglLahir) {
@@ -298,28 +298,33 @@ export default function AdminDashboard() {
     doc.text(calculateAge(getFieldValue(student, 'Tanggal Lahir'), settings?.tanggalCutoffUsia), 70, startY + lineHeight * 4);
 
     doc.setFont("helvetica", "bold");
-    doc.text("Status:", 20, startY + lineHeight * 5);
+    doc.text("Batas Usia:", 20, startY + lineHeight * 5);
     doc.setFont("helvetica", "normal");
-    doc.text(student.Status, 70, startY + lineHeight * 5);
+    doc.text(formatDate(settings?.tanggalCutoffUsia || ''), 70, startY + lineHeight * 5);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Status:", 20, startY + lineHeight * 6);
+    doc.setFont("helvetica", "normal");
+    doc.text(student.Status, 70, startY + lineHeight * 6);
 
     // Footer
     doc.setDrawColor(200, 200, 200);
-    doc.line(20, startY + lineHeight * 7, 190, startY + lineHeight * 7);
+    doc.line(20, startY + lineHeight * 8, 190, startY + lineHeight * 8);
     doc.setFontSize(10);
     doc.setTextColor(100, 100, 100);
-    doc.text(`Kartu ini adalah bukti sah pendaftaran SPMB ${settings?.namaSekolah || 'Sekolah'}.`, 105, startY + lineHeight * 8, { align: "center" });
-    doc.text(`Dicetak pada: ${new Date().toLocaleString()}`, 105, startY + lineHeight * 8.5, { align: "center" });
+    doc.text(`Kartu ini adalah bukti sah pendaftaran SPMB ${settings?.namaSekolah || 'Sekolah'}.`, 105, startY + lineHeight * 9, { align: "center" });
+    doc.text(`Dicetak pada: ${new Date().toLocaleString()}`, 105, startY + lineHeight * 9.5, { align: "center" });
 
     // Box around everything
     doc.setDrawColor(37, 99, 235);
     doc.setLineWidth(1);
-    doc.rect(10, 10, 190, 150);
+    doc.rect(10, 10, 190, 160);
 
     doc.save(`Kartu_SPMB_${student['No Pendaftaran']}.pdf`);
   };
 
   const filteredData = useMemo(() => {
-    return data.filter(item => {
+    return data.filter((item: AdminData) => {
       const nama = getFieldValue(item, 'Nama Lengkap') || '';
       const nik = getFieldValue(item, 'NIK') || '';
       const no = item['No Pendaftaran'] || '';
@@ -405,10 +410,10 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
               {[
                 { label: 'Total Pendaftar', value: data.length, color: 'bg-blue-500 text-white border-blue-600 shadow-md' },
-                { label: 'Lulus', value: data.filter(item => item.Status === 'Lulus').length, color: 'bg-green-500 text-white border-green-600 shadow-md' },
-                { label: 'Tidak Lulus', value: data.filter(item => item.Status === 'Tidak Lulus').length, color: 'bg-red-500 text-white border-red-600 shadow-md' },
-                { label: 'Laki-laki', value: data.filter(item => { const jk = getFieldValue(item, 'Jenis Kelamin'); return jk && jk.toLowerCase().includes('laki'); }).length, color: 'bg-indigo-500 text-white border-indigo-600 shadow-md' },
-                { label: 'Perempuan', value: data.filter(item => { const jk = getFieldValue(item, 'Jenis Kelamin'); return jk && jk.toLowerCase().includes('perempuan'); }).length, color: 'bg-pink-500 text-white border-pink-600 shadow-md' },
+                { label: 'Lulus', value: data.filter((item: AdminData) => item.Status === 'Lulus').length, color: 'bg-green-500 text-white border-green-600 shadow-md' },
+                { label: 'Tidak Lulus', value: data.filter((item: AdminData) => item.Status === 'Tidak Lulus').length, color: 'bg-red-500 text-white border-red-600 shadow-md' },
+                { label: 'Laki-laki', value: data.filter((item: AdminData) => { const jk = getFieldValue(item, 'Jenis Kelamin'); return jk && jk.toLowerCase().includes('laki'); }).length, color: 'bg-indigo-500 text-white border-indigo-600 shadow-md' },
+                { label: 'Perempuan', value: data.filter((item: AdminData) => { const jk = getFieldValue(item, 'Jenis Kelamin'); return jk && jk.toLowerCase().includes('perempuan'); }).length, color: 'bg-pink-500 text-white border-pink-600 shadow-md' },
               ].map((stat, idx) => (
                 <div key={idx} className={cn("p-4 rounded-xl border flex flex-col items-center justify-center text-center", stat.color)}>
                   <span className="text-sm font-medium opacity-90 mb-1">{stat.label}</span>
@@ -427,7 +432,7 @@ export default function AdminDashboard() {
                   type="text"
                   placeholder="Cari Nama, NIK, atau No. Pendaftaran..."
                   value={searchTerm}
-                  onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                   className={cn("block w-full pl-10 pr-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors",
                     isDarkMode ? "bg-slate-900 border-slate-700 text-white placeholder-slate-500" : "bg-white border-slate-300 text-slate-900"
                   )}
@@ -439,7 +444,7 @@ export default function AdminDashboard() {
                   <Filter size={18} className={isDarkMode ? "text-slate-400" : "text-slate-500"} />
                   <select
                     value={statusFilter}
-                    onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
                     className={cn("block w-full py-2 pl-3 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors",
                       isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300 text-slate-900"
                     )}
@@ -485,20 +490,20 @@ export default function AdminDashboard() {
                   <tbody className={cn("divide-y", isDarkMode ? "divide-slate-700" : "divide-slate-200")}>
                     {isLoading ? (
                       <tr>
-                        <td colSpan={7} className="px-6 py-12 text-center">
+                        <td colSpan={8} className="px-6 py-12 text-center">
                           <Loader2 className="animate-spin h-8 w-8 mx-auto text-blue-500 mb-4" />
                           <p className={isDarkMode ? "text-slate-400" : "text-slate-500"}>Memuat data...</p>
                         </td>
                       </tr>
                     ) : currentData.length === 0 ? (
                       <tr>
-                        <td colSpan={7} className="px-6 py-12 text-center">
+                        <td colSpan={8} className="px-6 py-12 text-center">
                           <div className="mx-auto h-12 w-12 text-slate-400 mb-4"><FileText size={48} /></div>
                           <p className={isDarkMode ? "text-slate-400" : "text-slate-500"}>Tidak ada data ditemukan</p>
                         </td>
                       </tr>
                     ) : (
-                      currentData.map((item, idx) => (
+                      currentData.map((item: AdminData, idx: number) => (
                         <motion.tr
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
@@ -664,7 +669,7 @@ export default function AdminDashboard() {
                       <input
                         type="text"
                         value={localSettings.namaSekolah}
-                        onChange={e => setLocalSettings({ ...localSettings, namaSekolah: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, namaSekolah: e.target.value })}
                         className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                       />
                     </div>
@@ -672,7 +677,7 @@ export default function AdminDashboard() {
                       <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Status Pendaftaran</label>
                       <select
                         value={localSettings.statusPendaftaran}
-                        onChange={e => setLocalSettings({ ...localSettings, statusPendaftaran: e.target.value as any })}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setLocalSettings({ ...localSettings, statusPendaftaran: e.target.value as any })}
                         className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                       >
                         <option value="Buka">Buka</option>
@@ -683,7 +688,7 @@ export default function AdminDashboard() {
                       <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Alamat</label>
                       <textarea
                         value={localSettings.alamat}
-                        onChange={e => setLocalSettings({ ...localSettings, alamat: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setLocalSettings({ ...localSettings, alamat: e.target.value })}
                         rows={2}
                         className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                       />
@@ -693,7 +698,7 @@ export default function AdminDashboard() {
                       <input
                         type="text"
                         value={localSettings.koordinatSekolah || ''}
-                        onChange={e => setLocalSettings({ ...localSettings, koordinatSekolah: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, koordinatSekolah: e.target.value })}
                         placeholder="Contoh: -6.200000, 106.816666"
                         className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                       />
@@ -704,7 +709,7 @@ export default function AdminDashboard() {
                       <input
                         type="date"
                         value={formatDateForInput(localSettings.tanggalCutoffUsia)}
-                        onChange={e => setLocalSettings({ ...localSettings, tanggalCutoffUsia: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, tanggalCutoffUsia: e.target.value })}
                         className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                       />
                       <p className="text-xs text-slate-500 mt-1">Tanggal acuan hitung usia (Contoh: 1 Juli 2026). Sistem akan menghitung usia pendaftar tepat pada tanggal tersebut.</p>
@@ -714,7 +719,7 @@ export default function AdminDashboard() {
                       <input
                         type="text"
                         value={localSettings.telepon}
-                        onChange={e => setLocalSettings({ ...localSettings, telepon: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, telepon: e.target.value })}
                         className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                       />
                     </div>
@@ -723,7 +728,7 @@ export default function AdminDashboard() {
                       <input
                         type="email"
                         value={localSettings.email}
-                        onChange={e => setLocalSettings({ ...localSettings, email: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, email: e.target.value })}
                         className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                       />
                     </div>
@@ -731,7 +736,7 @@ export default function AdminDashboard() {
                       <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Kontak Panitia</label>
                       <textarea
                         value={localSettings.kontakPanitia || ''}
-                        onChange={e => setLocalSettings({ ...localSettings, kontakPanitia: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setLocalSettings({ ...localSettings, kontakPanitia: e.target.value })}
                         placeholder="Masukkan daftar kontak panitia (gunakan enter untuk baris baru)"
                         rows={5}
                         className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
@@ -742,7 +747,7 @@ export default function AdminDashboard() {
                       <input
                         type="text"
                         value={localSettings.tahunPendaftaran || ''}
-                        onChange={e => setLocalSettings({ ...localSettings, tahunPendaftaran: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, tahunPendaftaran: e.target.value })}
                         placeholder="Contoh: 2024"
                         className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                       />
@@ -751,7 +756,7 @@ export default function AdminDashboard() {
                       <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Deskripsi Sekolah</label>
                       <textarea
                         value={localSettings.deskripsi}
-                        onChange={e => setLocalSettings({ ...localSettings, deskripsi: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setLocalSettings({ ...localSettings, deskripsi: e.target.value })}
                         rows={3}
                         className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                       />
@@ -793,7 +798,7 @@ export default function AdminDashboard() {
                       <input
                         type="date"
                         value={formatDateForInput(localSettings.tanggalPengumuman)}
-                        onChange={e => setLocalSettings({ ...localSettings, tanggalPengumuman: e.target.value })}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, tanggalPengumuman: e.target.value })}
                         className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                       />
                       <p className="text-xs text-slate-500 mt-1">Sebelum tanggal ini, pendaftar akan melihat status "Proses".</p>
@@ -810,7 +815,7 @@ export default function AdminDashboard() {
                         <input
                           type="date"
                           value={formatDateForInput(localSettings.tanggalDaftarUlang)}
-                          onChange={e => setLocalSettings({ ...localSettings, tanggalDaftarUlang: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, tanggalDaftarUlang: e.target.value })}
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                         />
                       </div>
@@ -818,7 +823,7 @@ export default function AdminDashboard() {
                         <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Persyaratan Daftar Ulang</label>
                         <textarea
                           value={localSettings.persyaratanDaftarUlang || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, persyaratanDaftarUlang: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setLocalSettings({ ...localSettings, persyaratanDaftarUlang: e.target.value })}
                           rows={5}
                           placeholder="1. Syarat pertama&#10;2. Syarat kedua"
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
@@ -837,7 +842,7 @@ export default function AdminDashboard() {
                         <input
                           type="text"
                           value={localSettings.namaKepalaSekolah || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, namaKepalaSekolah: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, namaKepalaSekolah: e.target.value })}
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                           placeholder="Contoh: Drs. H. Ahmad, M.Pd."
                         />
@@ -862,7 +867,7 @@ export default function AdminDashboard() {
                         <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Sambutan Kepala Sekolah</label>
                         <textarea
                           value={localSettings.sambutanKepalaSekolah || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, sambutanKepalaSekolah: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setLocalSettings({ ...localSettings, sambutanKepalaSekolah: e.target.value })}
                           rows={5}
                           placeholder="Masukkan kata sambutan kepala sekolah..."
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
@@ -872,7 +877,7 @@ export default function AdminDashboard() {
                         <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Visi Sekolah</label>
                         <textarea
                           value={localSettings.visiSekolah || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, visiSekolah: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setLocalSettings({ ...localSettings, visiSekolah: e.target.value })}
                           rows={3}
                           placeholder="Masukkan visi sekolah..."
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
@@ -882,7 +887,7 @@ export default function AdminDashboard() {
                         <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Misi Sekolah</label>
                         <textarea
                           value={localSettings.misiSekolah || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, misiSekolah: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setLocalSettings({ ...localSettings, misiSekolah: e.target.value })}
                           rows={5}
                           placeholder="1. Misi pertama&#10;2. Misi kedua"
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
@@ -901,7 +906,7 @@ export default function AdminDashboard() {
                         <input
                           type="text"
                           value={localSettings.panduanJudul || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, panduanJudul: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, panduanJudul: e.target.value })}
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                           placeholder="Panduan Pendaftaran SPMB"
                         />
@@ -910,7 +915,7 @@ export default function AdminDashboard() {
                         <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Deskripsi Panduan</label>
                         <textarea
                           value={localSettings.panduanDeskripsi || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, panduanDeskripsi: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setLocalSettings({ ...localSettings, panduanDeskripsi: e.target.value })}
                           rows={2}
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                           placeholder="Persiapkan dokumen berikut sebelum mulai mengisi formulir pendaftaran."
@@ -920,7 +925,7 @@ export default function AdminDashboard() {
                         <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Pesan Peringatan (Alert)</label>
                         <textarea
                           value={localSettings.panduanPeringatan || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, panduanPeringatan: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setLocalSettings({ ...localSettings, panduanPeringatan: e.target.value })}
                           rows={3}
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                           placeholder="Pastikan semua dokumen di-scan atau difoto dengan jelas dan dapat terbaca..."
@@ -932,6 +937,7 @@ export default function AdminDashboard() {
                           <h4 className="text-md font-semibold">Dokumen yang Harus Disiapkan</h4>
                           <button
                             onClick={() => {
+                              if (!localSettings) return;
                               const newDocs = [...(localSettings.panduanDokumen || [])];
                               newDocs.push({ id: Date.now().toString(), icon: 'FileText', title: 'Dokumen Baru', description: 'Deskripsi dokumen' });
                               setLocalSettings({ ...localSettings, panduanDokumen: newDocs });
@@ -1009,6 +1015,7 @@ export default function AdminDashboard() {
                           <h4 className="text-md font-semibold">Alur Pendaftaran</h4>
                           <button
                             onClick={() => {
+                              if (!localSettings) return;
                               const newAlur = [...(localSettings.panduanAlur || [])];
                               newAlur.push('Langkah baru');
                               setLocalSettings({ ...localSettings, panduanAlur: newAlur });
@@ -1061,7 +1068,7 @@ export default function AdminDashboard() {
                         <input
                           type="text"
                           value={localSettings.nomorSurat || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, nomorSurat: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, nomorSurat: e.target.value })}
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                           placeholder="Contoh: 421.2/001/SMP/2026"
                         />
@@ -1072,7 +1079,7 @@ export default function AdminDashboard() {
                         <input
                           type="text"
                           value={localSettings.tempatSurat || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, tempatSurat: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, tempatSurat: e.target.value })}
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                           placeholder="Contoh: Fakfak"
                         />
@@ -1083,7 +1090,7 @@ export default function AdminDashboard() {
                         <input
                           type="text"
                           value={localSettings.tanggalSurat || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, tanggalSurat: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, tanggalSurat: e.target.value })}
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                           placeholder="Contoh: 25 Juli 2026"
                         />
@@ -1094,7 +1101,7 @@ export default function AdminDashboard() {
                         <input
                           type="text"
                           value={localSettings.namaKepalaSekolah || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, namaKepalaSekolah: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, namaKepalaSekolah: e.target.value })}
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                           placeholder="Contoh: Drs. H. Ahmad, M.Pd."
                         />
@@ -1105,7 +1112,7 @@ export default function AdminDashboard() {
                         <input
                           type="text"
                           value={localSettings.nipKepalaSekolah || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, nipKepalaSekolah: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, nipKepalaSekolah: e.target.value })}
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                           placeholder="Contoh: 19700101 199512 1 001"
                         />
@@ -1166,7 +1173,7 @@ export default function AdminDashboard() {
                         <label className={cn("block text-sm font-medium mb-1", isDarkMode ? "text-slate-300" : "text-slate-700")}>Catatan Tambahan / Pengumuman Lain</label>
                         <textarea
                           value={localSettings.catatanTambahan || ''}
-                          onChange={e => setLocalSettings({ ...localSettings, catatanTambahan: e.target.value })}
+                          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setLocalSettings({ ...localSettings, catatanTambahan: e.target.value })}
                           rows={3}
                           placeholder="Contoh: Harap membawa materai 10.000 saat daftar ulang."
                           className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
@@ -1182,6 +1189,7 @@ export default function AdminDashboard() {
                       <h3 className="text-lg font-semibold">Pengaturan Field Formulir</h3>
                       <button
                         onClick={() => {
+                          if (!localSettings) return;
                           const newFields = [...localSettings.formFields, { id: `Field-${Date.now()}`, label: 'Field Baru', type: 'text' as const, required: false }];
                           setLocalSettings({ ...localSettings, formFields: newFields });
                         }}
@@ -1199,7 +1207,7 @@ export default function AdminDashboard() {
                             <input
                               type="text"
                               value={field.id}
-                              onChange={e => {
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                 const newFields = [...localSettings.formFields];
                                 newFields[index] = { ...newFields[index], id: e.target.value };
                                 setLocalSettings({ ...localSettings, formFields: newFields });
@@ -1212,7 +1220,7 @@ export default function AdminDashboard() {
                             <input
                               type="text"
                               value={field.label}
-                              onChange={e => {
+                              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                 const newFields = [...localSettings.formFields];
                                 newFields[index] = { ...newFields[index], label: e.target.value };
                                 setLocalSettings({ ...localSettings, formFields: newFields });
@@ -1224,7 +1232,7 @@ export default function AdminDashboard() {
                             <label className="block text-xs font-medium mb-1 opacity-70">Tipe</label>
                             <select
                               value={field.type}
-                              onChange={e => {
+                              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                                 const newFields = [...localSettings.formFields];
                                 newFields[index] = { ...newFields[index], type: e.target.value as any };
                                 setLocalSettings({ ...localSettings, formFields: newFields });
@@ -1245,7 +1253,7 @@ export default function AdminDashboard() {
                               <input
                                 type="checkbox"
                                 checked={field.required}
-                                onChange={e => {
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                   const newFields = [...localSettings.formFields];
                                   newFields[index] = { ...newFields[index], required: e.target.checked };
                                   setLocalSettings({ ...localSettings, formFields: newFields });
@@ -1273,7 +1281,7 @@ export default function AdminDashboard() {
                               <input
                                 type="text"
                                 value={field.options?.join(', ') || ''}
-                                onChange={e => {
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                   const newFields = [...localSettings.formFields];
                                   newFields[index] = { ...newFields[index], options: e.target.value.split(',').map(s => s.trim()).filter(Boolean) };
                                   setLocalSettings({ ...localSettings, formFields: newFields });
@@ -1343,7 +1351,7 @@ export default function AdminDashboard() {
                         </div>
 
                         {/* Dynamic Fields */}
-                        {settings?.formFields.filter(f => f.type !== 'file').map(field => {
+                        {(settings?.formFields || []).filter(f => f.type !== 'file').map(field => {
                           if (field.type === 'header') {
                             return (
                               <div key={field.id} className="col-span-3 pt-4 border-b border-slate-100 dark:border-slate-700 pb-1 mb-2">
@@ -1363,10 +1371,16 @@ export default function AdminDashboard() {
                                 </dd>
                               </div>
                               {field.id === 'Tanggal Lahir' && (
-                                <div className="grid grid-cols-3 gap-4">
-                                  <dt className="text-slate-500 dark:text-slate-400">Usia</dt>
-                                  <dd className="col-span-2 font-medium">{calculateAge(value, settings?.tanggalCutoffUsia)}</dd>
-                                </div>
+                                <>
+                                  <div className="grid grid-cols-3 gap-4">
+                                    <dt className="text-slate-500 dark:text-slate-400">Usia</dt>
+                                    <dd className="col-span-2 font-medium">{calculateAge(value, settings?.tanggalCutoffUsia)}</dd>
+                                  </div>
+                                  <div className="grid grid-cols-3 gap-4">
+                                    <dt className="text-slate-500 dark:text-slate-400">Batas Hitung Usia</dt>
+                                    <dd className="col-span-2 font-medium">{formatDate(settings?.tanggalCutoffUsia || '')}</dd>
+                                  </div>
+                                </>
                               )}
                             </React.Fragment>
                           )
@@ -1415,7 +1429,7 @@ export default function AdminDashboard() {
                   <div>
                     <h3 className="text-lg font-semibold border-b pb-2 mb-4 dark:border-slate-700">Berkas Upload</h3>
                     <div className="space-y-4">
-                      {settings?.formFields.filter(f => f.type === 'file').map(field => {
+                      {(settings?.formFields || []).filter(f => f.type === 'file').map(field => {
                         const fileUrl = getFieldValue(selectedStudent, field.id);
                         return (
                           <div key={field.id} className={cn("p-4 rounded-xl border", isDarkMode ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-slate-50")}>
