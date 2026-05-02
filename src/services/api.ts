@@ -97,6 +97,18 @@ export interface AdminData extends RegistrationData {
   'Alasan Penolakan'?: string;
 }
 
+// Helper to format date to YYYY-MM-DD for input fields
+const formatDateForInput = (dateString: any): string => {
+  if (!dateString) return "";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    return date.toISOString().split('T')[0];
+  } catch (e) {
+    return "";
+  }
+};
+
 // Mock data for preview if GAS URL is not set
 export const getInitialMockSettings = (): AppSettings => {
   const defaultSettings: AppSettings = {
@@ -201,7 +213,7 @@ export const getInitialMockSettings = (): AppSettings => {
     try {
       const parsed = JSON.parse(stored);
       // Force update cutoff date if it's missing or wrong
-      if (!parsed.tanggalCutoffUsia || parsed.tanggalCutoffUsia !== "2026-07-01") {
+      if (!parsed.tanggalCutoffUsia || formatDateForInput(parsed.tanggalCutoffUsia) !== "2026-07-01") {
         parsed.tanggalCutoffUsia = "2026-07-01";
         localStorage.setItem('mockSettings', JSON.stringify(parsed));
       }
