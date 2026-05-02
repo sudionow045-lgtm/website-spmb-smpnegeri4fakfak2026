@@ -269,11 +269,12 @@ export const getSettings = async (): Promise<AppSettings> => {
 
   if (result.status === "success") {
     const sanitizedData = {
+      ...mockSettings,
       ...result.data,
-      namaSekolah: result.data.namaSekolah === "SMP NEGERI 4 FAKFAK" ? "SMP NEGERI 4 FAKFAK" : result.data.namaSekolah,
-      formFields: typeof result.data.formFields === 'string' ? JSON.parse(result.data.formFields) : result.data.formFields,
-      panduanDokumen: typeof result.data.panduanDokumen === 'string' ? JSON.parse(result.data.panduanDokumen) : result.data.panduanDokumen,
-      panduanAlur: typeof result.data.panduanAlur === 'string' ? JSON.parse(result.data.panduanAlur) : result.data.panduanAlur
+      namaSekolah: result.data.namaSekolah === "SMP NEGERI 4 FAKFAK" ? "SMP NEGERI 4 FAKFAK" : (result.data.namaSekolah || mockSettings.namaSekolah),
+      formFields: typeof result.data.formFields === 'string' ? JSON.parse(result.data.formFields) : (result.data.formFields || mockSettings.formFields),
+      panduanDokumen: typeof result.data.panduanDokumen === 'string' ? JSON.parse(result.data.panduanDokumen) : (result.data.panduanDokumen || mockSettings.panduanDokumen),
+      panduanAlur: typeof result.data.panduanAlur === 'string' ? JSON.parse(result.data.panduanAlur) : (result.data.panduanAlur || mockSettings.panduanAlur)
     };
     return sanitizedData;
   }
