@@ -141,7 +141,7 @@ export const getInitialMockSettings = (): AppSettings => {
       { id: "Alat Transportasi", label: "Alat Transportasi ke Sekolah", type: "select", options: ["Jalan kaki", "Kendaraan pribadi", "Kendaraan umum", "Jemputan sekolah", "Kereta api", "Ojek", "Andong/Bendi/Sado/Kuda", "Perahu penyeberangan", "Lainnya"], required: true },
 
       { id: "header3", label: "DATA SEKOLAH ASAL", type: "header", required: false },
-      { id: "NPSN Sekolah", label: "NPSN Sekolah Asal", type: "text", required: true },
+      { id: "NPSN Sekolah", label: "NPSN Sekolah Asal", type: "number", required: true },
       { id: "Asal Sekolah", label: "Nama Sekolah Asal (SD/MI)", type: "text", required: true },
 
       { id: "header4", label: "DATA ORANG TUA / WALI", type: "header", required: false },
