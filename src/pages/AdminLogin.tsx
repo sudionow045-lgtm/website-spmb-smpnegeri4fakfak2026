@@ -28,11 +28,11 @@ export default function AdminLogin() {
           confirmButtonColor: '#3b82f6'
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'Terjadi kesalahan saat menghubungi server',
+        text: error.message || 'Terjadi kesalahan saat menghubungi server',
         confirmButtonColor: '#3b82f6'
       });
     } finally {
