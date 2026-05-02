@@ -45,6 +45,7 @@ const DEFAULT_FORM_FIELDS = [
   { id: "Penghasilan Ayah Kandung", label: "Penghasilan Ayah Kandung", type: "select", options: ["Kurang dari 500.000", "500.000 - 999.999", "1.000.000 - 1.999.999", "2.000.000 - 4.999.999", "5.000.000 - 20.000.000", "Lebih dari 20.000.000"], required: true },
   { id: "Tahun Lahir Ayah Kandung", label: "Tahun Lahir Ayah Kandung", type: "date", required: true },
    
+  { id: "Nama Ibu Kandung", label: "Nama Ibu Kandung", type: "text", required: true },
   { id: "Pekerjaan Ibu Kandung", label: "Pekerjaan Ibu Kandung", type: "select", options: ["Ibu Rumah Tangga", "Nelayan", "Petani", "Peternak", "PNS/TNI/Polri", "Karyawan Swasta", "Pedagang Kecil", "Pedagang Besar", "Wiraswasta", "Buruh", "Pensiunan", "Lainnya"], required: true },
   { id: "Pendidikan Ibu Kandung", label: "Pendidikan Terakhir Ibu Kandung", type: "select", options: ["Tidak Sekolah", "Putus SD", "SD Sederajat", "SMP Sederajat", "SMA Sederajat", "D1", "D2", "D3", "D4/S1", "S2", "S3"], required: true },
   { id: "Penghasilan Ibu Kandung", label: "Penghasilan Ibu Kandung", type: "select", options: ["Kurang dari 500.000", "500.000 - 999.999", "1.000.000 - 1.999.999", "2.000.000 - 4.999.999", "5.000.000 - 20.000.000", "Lebih dari 20.000.000"], required: true },
@@ -56,7 +57,7 @@ const DEFAULT_FORM_FIELDS = [
   { id: "Status Anak", label: "Status Anak", type: "select", options: ["Anak Kandung", "Anak Tiri", "Anak Angkat", "Keponakan", "Lainnya"], required: true },
   { id: "Tinggi Badan", label: "Tinggi Badan (cm)", type: "number", required: true },
   { id: "Berat Badan", label: "Berat Badan (kg)", type: "number", required: true },
-  { id: "Apakah Penerima KIP?", label: "Apakah Penerima KIP?", type: "select", option: ["Tidak", "Ya"], required: true },
+  { id: "Apakah Penerima KIP?", label: "Apakah Penerima KIP?", type: "select", options: ["Tidak", "Ya"], required: true },
   { id: "Jumlah Saudara Kandung", label: "Jumlah Saudara Kandung", type: "number", required: true },
   
   { id: "header_berkas", label: "BERKAS", type: "header" },
