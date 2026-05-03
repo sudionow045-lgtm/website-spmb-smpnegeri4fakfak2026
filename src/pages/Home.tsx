@@ -240,7 +240,7 @@ export default function Home() {
                 step: "02",
                 icon: <BookOpen size={28} />,
                 title: "Upload Berkas",
-                desc: "Unggah dokumen yang di persyaratan."
+                desc: "Unggah dokumen yang di persyaratkan."
               },
               {
                 step: "03",
