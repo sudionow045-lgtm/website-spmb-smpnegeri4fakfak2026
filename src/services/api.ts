@@ -393,8 +393,18 @@ export const getSchoolInfo = async (npsn: string) => {
 
         if (Array.isArray(result) && result.length > 0) schoolName = result[0].sekolah || result[0].nama;
         else if (result?.data?.satuanPendidikan?.nama) schoolName = result.data.satuanPendidikan.nama;
-        else if (result?.data && Array.isArray(result.data) && result.data.length > 0) schoolName = result.data[0].nama || result.data[0].sekolah;
-        else if (result.status === 'success' && result.data && result.data.length > 0) schoolName = result.data[0].sekolah || result.data[0].nama;
+        else if (result?.data && Array.isArray(result.data) && result.data.length > 0) {
+          // Check for data array structure
+          const first = result.data[0];
+          schoolName = first.nama || first.sekolah || first.nama_sekolah;
+        }
+        else if (result.status === 'success' && result.data) {
+          if (Array.isArray(result.data) && result.data.length > 0) {
+            schoolName = result.data[0].sekolah || result.data[0].nama;
+          } else if (typeof result.data === 'object') {
+            schoolName = result.data.sekolah || result.data.nama || result.data.nama_sekolah;
+          }
+        }
 
         if (schoolName) return { status: 'success', data: { sekolah: schoolName } };
       } catch (e) { continue; }
@@ -402,11 +412,63 @@ export const getSchoolInfo = async (npsn: string) => {
     return { status: 'error', message: 'Not found' };
   }
 
-  return await safeFetch(GAS_WEB_APP_URL, {
-    method: "POST",
-    body: JSON.stringify({ action: "getSchoolInfo", npsn }),
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-  });
+  try {
+    const result = await safeFetch(GAS_WEB_APP_URL, {
+      method: "POST",
+      body: JSON.stringify({ action: "getSchoolInfo", npsn }),
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+    });
+
+    // If GAS fails or doesn't find it, try direct APIs as fallback
+    if (result.status !== 'success' || !result.data?.sekolah) {
+      console.log("GAS school lookup failed, trying backup APIs...");
+      const backupResult = await getSchoolInfoDirect(npsn);
+      if (backupResult.status === 'success') return backupResult;
+    }
+
+    return result;
+  } catch (error) {
+    return await getSchoolInfoDirect(npsn);
+  }
+};
+
+// Internal helper for direct API fallback
+const getSchoolInfoDirect = async (npsn: string) => {
+  const endpoints = [
+    `https://api-sekolah-indonesia.vercel.app/sekolah?npsn=${npsn}`,
+    `https://api.fazriansyah.eu.org/v1/sekolah?npsn=${npsn}`,
+    `https://sekolah.devapi.id/sekolah?npsn=${npsn}`
+  ];
+
+  for (const url of endpoints) {
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      if (!response.ok) continue;
+
+      const result = await response.json();
+      let schoolName = '';
+
+      if (Array.isArray(result) && result.length > 0) schoolName = result[0].sekolah || result[0].nama;
+      else if (result?.data?.satuanPendidikan?.nama) schoolName = result.data.satuanPendidikan.nama;
+      else if (result?.data) {
+        if (Array.isArray(result.data) && result.data.length > 0) {
+          schoolName = result.data[0].nama || result.data[0].sekolah;
+        } else if (typeof result.data === 'object') {
+          schoolName = result.data.nama || result.data.sekolah || result.data.nama_sekolah || result.data.nama_satuan_pendidikan;
+        }
+      }
+      else if (result.status === 'success' && result.data) {
+        if (Array.isArray(result.data) && result.data.length > 0) {
+          schoolName = result.data[0].sekolah || result.data[0].nama;
+        } else {
+          schoolName = result.data.sekolah || result.data.nama;
+        }
+      }
+
+      if (schoolName) return { status: 'success', data: { sekolah: schoolName.toUpperCase() } };
+    } catch (e) { continue; }
+  }
+  return { status: 'error', message: 'Sekolah tidak ditemukan' };
 };
 
 export const getRegistrations = async (): Promise<AdminData[]> => {
