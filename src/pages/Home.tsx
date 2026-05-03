@@ -32,7 +32,7 @@ export default function Home() {
       <section className="relative overflow-hidden bg-white pt-16 pb-32">
         <div
           className={`absolute inset-0 bg-cover bg-center ${settings?.gambarHeaderBeranda ? 'opacity-30' : 'opacity-5'}`}
-          style={{ backgroundImage: `url('${settings?.gambarHeaderBeranda || 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=2022&auto=format&fit=crop'}')` }}
+          style={{ backgroundImage: `url('${settings?.gambarHeaderBeranda || 'https://i.imgur.com/dyUirbi.jpeg'}')` }}
         ></div>
         <div className={`absolute inset-0 bg-gradient-to-br from-blue-50/90 via-white/80 to-green-50/90 ${settings?.gambarHeaderBeranda ? '' : 'backdrop-blur-sm'}`}></div>
 
@@ -128,7 +128,7 @@ export default function Home() {
               {
                 icon: <Trophy className="text-amber-500" size={32} />,
                 title: "Fasilitas Lengkap",
-                desc: "Ruang kelas nyaman, perpustakaan digital, lab komputer, dan fasilitas olahraga yang memadai."
+                desc: "Ruang kelas nyaman, perpustakaan, Ruang komputer, dan fasilitas olahraga yang memadai."
               }
             ].map((feature, idx) => (
               <motion.div
@@ -168,7 +168,7 @@ export default function Home() {
                 ))}
                 <div className="flex items-center gap-4 mt-8">
                   <div className="w-16 h-16 rounded-full bg-slate-200 overflow-hidden">
-                    <img src={settings?.fotoKepalaSekolah || "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=256&auto=format&fit=crop"} alt="Kepala Sekolah" className="w-full h-full object-cover" />
+                    <img src={settings?.fotoKepalaSekolah || "https://i.imgur.com/9wlgK8w.png"} alt="Kepala Sekolah" className="w-full h-full object-cover" />
                   </div>
                   <div>
                     <h4 className="font-bold text-slate-900">{settings?.namaKepalaSekolah || 'Kepala Sekolah'}</h4>
