@@ -221,7 +221,7 @@ export default function Home() {
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Alur Pendaftaran SPMB</h2>
             <p className="text-slate-400 max-w-2xl mx-auto text-lg">
-              Ikuti langkah-langkah mudah berikut untuk mendaftarkan putra/putri Anda di {(!settings?.namaSekolah || settings.namaSekolah === 'SDN Harapan Bangsa') ? 'SMP NEGERI 4 FAKFAK' : settings.namaSekolah}.
+              Ikuti langkah-langkah mudah berikut untuk mendaftarkan putra/putri Anda di {(!settings?.namaSekolah || settings.namaSekolah === 'SMP NEGERI 4 FAKFAK') ? 'SMP NEGERI 4 FAKFAK' : settings.namaSekolah}.
             </p>
           </div>
 
