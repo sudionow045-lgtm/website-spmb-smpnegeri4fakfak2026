@@ -157,6 +157,7 @@ export const getInitialMockSettings = (): AppSettings => {
       { id: "Desa/Kelurahan", label: "Desa / Kelurahan", type: "text", required: true },
       { id: "Kecamatan", label: "Kecamatan", type: "text", required: true },
       { id: "Kode Pos", label: "Kode Pos", type: "number", required: true },
+      { id: "Jarak Rumah Dengan Sekolah", label: "Jarak Rumah Dengan Sekolah (km)", type: "number", required: true },
       { id: "Jenis Tinggal", label: "Jenis Tinggal", type: "select", options: ["Bersama Orang Tua", "Wali", "Kos", "Asrama", "Panti Asuhan", "Lainnya"], required: true },
       { id: "Alat Transportasi", label: "Alat Transportasi ke Sekolah", type: "select", options: ["Jalan kaki", "Kendaraan pribadi", "Kendaraan umum", "Jemputan sekolah", "Kereta api", "Ojek", "Andong/Bendi/Sado/Kuda", "Perahu penyeberangan", "Lainnya"], required: true },
 
