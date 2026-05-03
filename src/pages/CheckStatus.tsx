@@ -157,7 +157,7 @@ export default function CheckStatus() {
 
     // 7. Signature Area (Positioned relative to bottom to ensure 1 page)
     const today = new Date();
-    const dateStr = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+    const dateStr = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
     const tempat = settings?.tempatSurat || 'Fakfak';
     const tanggal = settings?.tanggalSurat || dateStr;
 
