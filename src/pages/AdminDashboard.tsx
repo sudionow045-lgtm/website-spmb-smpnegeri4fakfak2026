@@ -242,11 +242,12 @@ export default function AdminDashboard() {
     };
 
     // 1. Draw Professional Card Border
+    const cardHeight = 180;
     doc.setDrawColor(37, 99, 235); // blue-600
     doc.setLineWidth(1);
-    doc.rect(margin, margin, pageWidth - (margin * 2), 160);
+    doc.rect(margin, margin, pageWidth - (margin * 2), cardHeight);
     doc.setLineWidth(0.2);
-    doc.rect(margin + 2, margin + 2, pageWidth - (margin * 2) - 4, 156);
+    doc.rect(margin + 2, margin + 2, pageWidth - (margin * 2) - 4, cardHeight - 4);
 
     // 2. Header
     doc.setFillColor(37, 99, 235);
@@ -314,39 +315,39 @@ export default function AdminDashboard() {
       margin: { left: margin + 5, right: margin + 45 },
       body: tableData,
       theme: 'plain',
-      styles: { fontSize: 10, cellPadding: 2.5, textColor: [0, 0, 0] },
+      styles: { fontSize: 10, cellPadding: 2, textColor: [0, 0, 0] },
       columnStyles: {
         0: { cellWidth: 35, fontStyle: 'bold' }
       }
     });
 
-    currentY = (doc as any).lastAutoTable.finalY + 15;
-
-    // 5. Signature & Stamp Area
+    // 5. Signature & Stamp Area (Aligned to the bottom of the card)
+    const sigY = margin + cardHeight - 50;
     const sigX = pageWidth - margin - 70;
-    const dateStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const today = new Date();
+    const dateStr = today.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
     doc.setFontSize(9);
-    doc.text(`${settings?.tempatSurat || 'Fakfak'}, ${dateStr}`, sigX, currentY);
-    doc.text("Panitia SPMB,", sigX, currentY + 5);
+    doc.text(`${settings?.tempatSurat || 'Fakfak'}, ${dateStr}`, sigX, sigY);
+    doc.text("Panitia SPMB,", sigX, sigY + 5);
 
     if (settings?.stempelSekolah) {
       try {
-        doc.addImage(settings.stempelSekolah, 'PNG', sigX - 10, currentY + 7, 25, 25);
+        doc.addImage(settings.stempelSekolah, 'PNG', sigX - 10, sigY + 7, 25, 25);
       } catch (e) { }
     }
 
     doc.setFont("helvetica", "bold");
-    doc.text(settings?.namaKepalaSekolah || "Kepala Sekolah", sigX, currentY + 30);
+    doc.text(settings?.namaKepalaSekolah || "Kepala Sekolah", sigX, sigY + 30);
     doc.setFont("helvetica", "normal");
-    doc.text(`NIP. ${settings?.nipKepalaSekolah || '-'}`, sigX, currentY + 35);
+    doc.text(`NIP. ${settings?.nipKepalaSekolah || '-'}`, sigX, sigY + 35);
 
     // 6. Footer Info
     doc.setFontSize(8);
-    doc.setTextColor(100, 100, 100);
+    doc.setTextColor(150, 150, 150);
     doc.setDrawColor(230, 230, 230);
-    doc.line(margin + 5, margin + 150, pageWidth - margin - 5, margin + 150);
-    doc.text("Kartu ini wajib dibawa saat verifikasi berkas dan tes seleksi.", 105, margin + 155, { align: "center" });
+    doc.line(margin + 5, margin + cardHeight - 10, pageWidth - margin - 5, margin + cardHeight - 10);
+    doc.text("Kartu ini wajib dibawa saat verifikasi berkas dan tes seleksi.", 105, margin + cardHeight - 5, { align: "center" });
 
     doc.save(`Kartu_SPMB_${student['No Pendaftaran']}.pdf`);
   };
