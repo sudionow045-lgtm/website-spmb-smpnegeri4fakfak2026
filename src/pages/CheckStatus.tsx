@@ -108,13 +108,16 @@ export default function CheckStatus() {
     doc.text('Panitia Seleksi menyatakan bahwa:', margin, currentY);
     currentY += 15;
 
+    // Get name with multiple fallbacks to ensure it shows up
+    const studentName = data.namaLengkap || data['Nama Lengkap'] || data['Nama Lengkap (Sesuai Ijazah/Akta)'] || '-';
+
     // 5. Data Table (Simplified for certificate look)
     autoTable(doc, {
       startY: currentY,
       margin: { left: margin + 10, right: margin + 10 },
       body: [
-        ['No. Pendaftaran', ': ' + (data.noPendaftaran || '-')],
-        ['Nama Lengkap', ': ' + (data.namaLengkap || '-')],
+        ['No. Pendaftaran', ': ' + (data.noPendaftaran || data['No Pendaftaran'] || '-')],
+        ['Nama Lengkap', ': ' + studentName],
         ['Status', { content: ': LULUS', styles: { fontStyle: 'bold', textColor: [0, 128, 0] } }]
       ],
       theme: 'plain',
@@ -325,7 +328,7 @@ export default function CheckStatus() {
                     </div>
                     <div>
                       <span className="block text-slate-500 mb-1">Nama Lengkap</span>
-                      <span className="font-semibold text-slate-900">{result.namaLengkap}</span>
+                      <span className="font-semibold text-slate-900">{result.namaLengkap || (result as any)['Nama Lengkap'] || (result as any)['Nama Lengkap (Sesuai Ijazah/Akta)'] || '-'}</span>
                     </div>
                   </div>
                 </div>
