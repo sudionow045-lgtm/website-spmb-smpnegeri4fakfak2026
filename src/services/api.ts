@@ -195,7 +195,7 @@ export const getInitialMockSettings = (): AppSettings => {
       { id: "2", icon: "FileBadge", title: "Akta Kelahiran", description: "Dokumen asli atau fotokopi untuk verifikasi usia dan data diri calon siswa." },
       { id: "3", icon: "FileImage", title: "Pas Foto 3x4", description: "Pas foto terbaru berwarna (mengenakan seragam SD/MI) dengan latar belakang merah atau biru." },
       { id: "4", icon: "FileText", title: "Ijazah / SKL", description: "Ijazah asli atau Surat Keterangan Lulus (SKL) dari jenjang SD/MI/Sederajat." },
-      { id: "5", icon: "FileBadge", title: "Sertifikat TKA", description: "Sertifikat Tes Kemampuan Akademik (TKA) bagi yang memiliki (khusus lulusan tahun 2026)." },
+      { id: "5", icon: "FileBadge", title: "Sertifikat TKA", description: "Sertifikat Tes Kemampuan Akademik (TKA) bagi lulusan SD/MI tahun 2026)." },
       { id: "6", icon: "FileText", title: "KIP/PKH/KKS (Jika Ada)", description: "Bukti kepesertaan program bantuan pemerintah untuk jalur afirmasi (jika memiliki)." }
     ],
     panduanAlur: [
