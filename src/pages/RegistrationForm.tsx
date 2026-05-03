@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 import { submitRegistration, RegistrationData, FormField, getSchoolInfo } from '../services/api';
 import { useSettings } from '../context/SettingsContext';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { compressImage } from '../lib/utils';
 
 export default function RegistrationForm() {
@@ -213,7 +213,7 @@ export default function RegistrationForm() {
       }
     });
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: currentY,
       margin: { left: margin, right: margin + 35 }, // Leave space for photo
       body: tableData,
@@ -227,7 +227,7 @@ export default function RegistrationForm() {
       }
     });
 
-    currentY = doc.lastAutoTable.finalY + 15;
+    currentY = (doc as any).lastAutoTable.finalY + 15;
 
     // 5. Signature Area
     const tempat = settings?.tempatSurat || 'Fakfak';
