@@ -197,8 +197,20 @@ function doPost(e) {
 
 function doGet(e) {
   try {
+    const cache = CacheService.getScriptCache();
+    
     if (e.parameter.action === "getSettings") {
+      const cachedSettings = cache.get("app_settings");
+      if (cachedSettings) {
+        return ContentService.createTextOutput(cachedSettings).setMimeType(ContentService.MimeType.JSON);
+      }
       return handleGetSettings();
+    }
+
+    // Cache registrations for 1 minute
+    const cachedRegistrations = cache.get("registrations_data");
+    if (cachedRegistrations && !e.parameter.t) { // Don't use cache if timestamp 't' is provided (manual refresh)
+      return ContentService.createTextOutput(cachedRegistrations).setMimeType(ContentService.MimeType.JSON);
     }
 
     const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -230,10 +242,17 @@ function doGet(e) {
     // Sort by timestamp descending
     result.sort((a, b) => new Date(b.Timestamp) - new Date(a.Timestamp));
     
-    return ContentService.createTextOutput(JSON.stringify({
+    const output = JSON.stringify({
       status: "success",
       data: result
-    })).setMimeType(ContentService.MimeType.JSON);
+    });
+
+    // Cache the result for 60 seconds
+    try {
+      cache.put("registrations_data", output, 60);
+    } catch (e) {}
+
+    return ContentService.createTextOutput(output).setMimeType(ContentService.MimeType.JSON);
     
   } catch (error) {
     return ContentService.createTextOutput(JSON.stringify({
@@ -246,23 +265,29 @@ function doGet(e) {
 function handleGetSettings() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(SETTINGS_SHEET_NAME);
+  let settings = {};
+
   if (!sheet) {
-    return ContentService.createTextOutput(JSON.stringify({
-      status: "success",
-      data: DEFAULT_SETTINGS
-    })).setMimeType(ContentService.MimeType.JSON);
+    settings = DEFAULT_SETTINGS;
+  } else {
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      settings[data[i][0]] = data[i][1];
+    }
   }
 
-  const data = sheet.getDataRange().getValues();
-  const settings = {};
-  for (let i = 1; i < data.length; i++) {
-    settings[data[i][0]] = data[i][1];
-  }
-
-  return ContentService.createTextOutput(JSON.stringify({
+  const output = JSON.stringify({
     status: "success",
     data: settings
-  })).setMimeType(ContentService.MimeType.JSON);
+  });
+
+  // Cache settings for 30 minutes
+  try {
+    const cache = CacheService.getScriptCache();
+    cache.put("app_settings", output, 1800);
+  } catch (e) {}
+
+  return ContentService.createTextOutput(output).setMimeType(ContentService.MimeType.JSON);
 }
 
 function handleUpdateSettings(newSettings) {
@@ -287,6 +312,12 @@ function handleUpdateSettings(newSettings) {
       sheet.appendRow([key, typeof newSettings[key] === 'object' ? JSON.stringify(newSettings[key]) : newSettings[key]]);
     }
   });
+
+  // Clear cache after update
+  try {
+    const cache = CacheService.getScriptCache();
+    cache.remove("app_settings");
+  } catch (e) {}
 
   return ContentService.createTextOutput(JSON.stringify({
     status: "success",
@@ -417,6 +448,12 @@ function handleRegistration(data) {
   
   sheet.appendRow(rowData);
   
+  // Clear registrations cache
+  try {
+    const cache = CacheService.getScriptCache();
+    cache.remove("registrations_data");
+  } catch (e) {}
+  
   return ContentService.createTextOutput(JSON.stringify({
     status: "success",
     message: "Pendaftaran berhasil",
@@ -475,6 +512,13 @@ function updateStatus(noPendaftaran, newStatus) {
   for (let i = 1; i < data.length; i++) {
     if (data[i][noRegIdx] === noPendaftaran) {
       sheet.getRange(i + 1, statusIdx + 1).setValue(newStatus);
+      
+      // Clear registrations cache
+      try {
+        const cache = CacheService.getScriptCache();
+        cache.remove("registrations_data");
+      } catch (e) {}
+
       return ContentService.createTextOutput(JSON.stringify({ status: "success", message: "Status berhasil diupdate" })).setMimeType(ContentService.MimeType.JSON);
     }
   }
