@@ -400,7 +400,7 @@ export default function AdminDashboard() {
       ['NIK', ': ' + (getFieldValue(student, 'NIK') || student['NIK'] || '-')],
       ['Tempat, Tgl Lahir', ': ' + (getFieldValue(student, 'Tempat Lahir') || '-') + ', ' + formatDateStr(getFieldValue(student, 'Tanggal Lahir'))],
       ['Jenis Kelamin', ': ' + (getFieldValue(student, 'Jenis Kelamin') || '-')],
-      ['Sekolah Asal', ': ' + (getFieldValue(student, 'Nama Sekolah Asal (SD/MI)') || student['Nama Sekolah Asal (SD/MI)'] || '-')],
+      ['Sekolah Asal', ': ' + (getFieldValue(student, 'Asal Sekolah') || student['Asal Sekolah'] || student['Nama Sekolah Asal (SD/MI)'] || '-')],
       ['Status', ': ' + (student.Status || 'Proses')]
     ];
 
