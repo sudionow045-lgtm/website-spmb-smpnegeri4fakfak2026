@@ -293,6 +293,41 @@ export default function RegistrationForm() {
       return;
     }
 
+    // Length validation for NISN, NIK, and NPSN
+    const nisn = formData['NISN']?.toString() || '';
+    const nik = formData['NIK']?.toString() || '';
+    const npsn = formData['NPSN Sekolah']?.toString() || '';
+
+    if (nisn && nisn.length !== 10) {
+      Swal.fire({
+        icon: 'error',
+        title: 'NISN Tidak Valid',
+        text: 'NISN wajib berjumlah 10 digit nomor.',
+        confirmButtonColor: '#3b82f6'
+      });
+      return;
+    }
+
+    if (nik && nik.length !== 16) {
+      Swal.fire({
+        icon: 'error',
+        title: 'NIK Tidak Valid',
+        text: 'NIK wajib berjumlah 16 digit nomor.',
+        confirmButtonColor: '#3b82f6'
+      });
+      return;
+    }
+
+    if (npsn && npsn.length !== 8) {
+      Swal.fire({
+        icon: 'error',
+        title: 'NPSN Tidak Valid',
+        text: 'NPSN Sekolah Asal wajib berjumlah 8 digit nomor.',
+        confirmButtonColor: '#3b82f6'
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -418,6 +453,43 @@ export default function RegistrationForm() {
           </div>
         );
       case 'number':
+        // Special handling for NISN, NIK, and NPSN to enforce length and better UX
+        if (field.id === 'NISN' || field.id === 'NIK' || field.id === 'NPSN Sekolah' || field.id === 'No. WhatsApp Aktif') {
+          const maxLength = field.id === 'NISN' ? 10 : field.id === 'NIK' ? 16 : field.id === 'NPSN Sekolah' ? 8 : 15;
+          return (
+            <div className="relative">
+              <input
+                type="text"
+                name={field.id}
+                required={field.required}
+                inputMode="numeric"
+                value={formData[field.id] || ''}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/\D/g, '');
+                  if (val.length <= maxLength) {
+                    setFormData(prev => ({ ...prev, [field.id]: val }));
+                  }
+                }}
+                className={`${commonClasses} ${field.id === 'NPSN Sekolah' ? 'pr-20' : ''}`}
+                placeholder={`${field.label} (${maxLength} Digit)`}
+              />
+              {field.id === 'NPSN Sekolah' && (
+                <button
+                  type="button"
+                  onClick={() => handleSearchSchool(formData[field.id])}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded hover:bg-blue-200 transition-colors"
+                >
+                  Cek
+                </button>
+              )}
+              {field.id === 'NPSN Sekolah' && isFetchingSchool && (
+                <div className="absolute right-12 top-1/2 -translate-y-1/2">
+                  <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
+                </div>
+              )}
+            </div>
+          );
+        }
         return (
           <input
             type="number"
@@ -456,23 +528,14 @@ export default function RegistrationForm() {
               required={field.required}
               value={formData[field.id] || ''}
               onChange={handleChange}
-              className={`${commonClasses} ${(field.id === 'Asal Sekolah' || field.id === 'NPSN Sekolah') && isFetchingSchool
+              className={`${commonClasses} ${field.id === 'Asal Sekolah' && isFetchingSchool
                 ? 'bg-slate-50 pr-10'
                 : ''
-                } ${field.id === 'NPSN Sekolah' ? 'pr-20' : ''}`}
+                }`}
               placeholder={field.label}
             />
-            {field.id === 'NPSN Sekolah' && (
-              <button
-                type="button"
-                onClick={() => handleSearchSchool(formData[field.id])}
-                className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded hover:bg-blue-200 transition-colors"
-              >
-                Cek
-              </button>
-            )}
-            {(field.id === 'Asal Sekolah' || field.id === 'NPSN Sekolah') && isFetchingSchool && (
-              <div className="absolute right-12 top-1/2 -translate-y-1/2">
+            {field.id === 'Asal Sekolah' && isFetchingSchool && (
+              <div className="absolute right-4 top-1/2 -translate-y-1/2">
                 <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
               </div>
             )}
