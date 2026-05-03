@@ -122,10 +122,11 @@ export default function RegistrationForm() {
       if (!dateString) return '-';
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return dateString;
-      const day = String(date.getDate()).padStart(2, '0');
-      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = date.getDate();
+      const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+      const month = monthNames[date.getMonth()];
       const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
+      return `${day} ${month} ${year}`;
     };
 
     // 1. Draw Page Border
@@ -179,7 +180,7 @@ export default function RegistrationForm() {
     doc.text(`NO. PENDAFTARAN : ${noPendaftaran}`, margin, currentY);
 
     const today = new Date();
-    const dateStr = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
+    const dateStr = formatDate(today.toISOString());
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     doc.text(`Dicetak pada: ${dateStr}`, pageWidth - margin, currentY, { align: 'right' });
@@ -203,11 +204,22 @@ export default function RegistrationForm() {
       if (field.type === 'header') {
         tableData.push([{ content: field.label, colSpan: 2, styles: { fillColor: [240, 245, 255], textColor: [37, 99, 235], fontStyle: 'bold', fontSize: 10 } }]);
       } else if (field.type !== 'file') {
+        // Gabungkan Tempat dan Tanggal Lahir jika field adalah Tanggal Lahir
+        if (field.id === 'Tempat Lahir') return; // Lewati field Tempat Lahir karena akan digabung
+
         let value = formData[field.id] || '-';
-        if (field.type === 'date') value = formatDate(value);
+        let label = field.label;
+
+        if (field.id === 'Tanggal Lahir') {
+          const tempatLahir = formData['Tempat Lahir'] || '-';
+          value = `${tempatLahir}, ${formatDate(value)}`;
+          label = 'Tempat, Tgl Lahir';
+        } else if (field.type === 'date') {
+          value = formatDate(value);
+        }
 
         tableData.push([
-          { content: field.label, styles: { cellWidth: 60, fontStyle: 'bold', fontSize: 9 } },
+          { content: label, styles: { cellWidth: 60, fontStyle: 'bold', fontSize: 9 } },
           { content: value, styles: { fontSize: 9 } }
         ]);
       }
