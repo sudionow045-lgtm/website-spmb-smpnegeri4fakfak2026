@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Upload, AlertCircle, FileText, Image as ImageIcon, Loader2, MapPin } from 'lucide-react';
+import { Upload, AlertCircle, FileText, Loader2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import { Link } from 'react-router-dom';
 import { submitRegistration, RegistrationData, FormField, getSchoolInfo } from '../services/api';
 import { useSettings } from '../context/SettingsContext';
 import jsPDF from 'jspdf';
-import MapPicker from '../components/MapPicker';
-import { calculateDistance } from '../utils/distance';
+import { compressImage } from '../lib/utils';
 
 export default function RegistrationForm() {
   const { settings } = useSettings();
@@ -18,8 +17,6 @@ export default function RegistrationForm() {
   const [isAgreed, setIsAgreed] = useState(false);
   const [formData, setFormData] = useState<RegistrationData>({});
   const [previews, setPreviews] = useState<Record<string, string>>({});
-  const [mapLocation, setMapLocation] = useState<{ lat: number, lng: number } | null>(null);
-  const [distance, setDistance] = useState<number | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -93,27 +90,23 @@ export default function RegistrationForm() {
       return;
     }
 
-    // Convert to Base64
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64String = reader.result as string;
-      setFormData(prev => ({ ...prev, [fieldId]: base64String }));
-      setPreviews(prev => ({ ...prev, [fieldId]: base64String }));
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handleLocationSelect = (lat: number, lng: number) => {
-    setMapLocation({ lat, lng });
-    setFormData(prev => ({ ...prev, 'Koordinat Lokasi': `${lat}, ${lng}` }));
-
-    if (settings?.koordinatSekolah) {
-      const [schoolLat, schoolLng] = settings.koordinatSekolah.split(',').map(s => parseFloat(s.trim()));
-      if (!isNaN(schoolLat) && !isNaN(schoolLng)) {
-        const dist = calculateDistance(lat, lng, schoolLat, schoolLng);
-        setDistance(dist);
-        setFormData(prev => ({ ...prev, 'Jarak ke Sekolah (km)': dist.toFixed(2) }));
+    // Convert to Base64 with compression if it's an image
+    try {
+      let result: string;
+      if (file.type.startsWith('image/')) {
+        result = await compressImage(file);
+      } else {
+        const reader = new FileReader();
+        result = await new Promise((resolve) => {
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.readAsDataURL(file);
+        });
       }
+
+      setFormData(prev => ({ ...prev, [fieldId]: result }));
+      setPreviews(prev => ({ ...prev, [fieldId]: result }));
+    } catch (error) {
+      console.error("Failed to process file", error);
     }
   };
 
