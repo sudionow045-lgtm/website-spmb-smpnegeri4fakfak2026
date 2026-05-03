@@ -167,28 +167,30 @@ export default function CheckStatus() {
       currentY = pageHeight - margin - footerHeight;
     }
 
-    const sigX = pageWidth - margin - 70;
+    const sigCenterX = pageWidth - margin - 40;
     doc.setFontSize(10.5);
-    doc.text(`${tempat}, ${tanggal}`, sigX, currentY);
-    doc.text('Kepala Sekolah,', sigX, currentY + 5);
+    doc.text(`${tempat}, ${tanggal}`, sigCenterX, currentY, { align: 'center' });
+    doc.text('Kepala Sekolah,', sigCenterX, currentY + 5, { align: 'center' });
 
     if (settings?.stempelSekolah) {
       try {
-        doc.addImage(settings.stempelSekolah, 'PNG', sigX - 12, currentY + 6, 28, 28);
+        // Position stamp slightly to the left of center
+        doc.addImage(settings.stempelSekolah, 'PNG', sigCenterX - 30, currentY + 7, 30, 30);
       } catch (e) { }
     }
 
     if (settings?.tandaTanganKepalaSekolah) {
       try {
-        doc.addImage(settings.tandaTanganKepalaSekolah, 'PNG', sigX, currentY + 8, 40, 18);
+        // Position signature centered
+        doc.addImage(settings.tandaTanganKepalaSekolah, 'PNG', sigCenterX - 20, currentY + 8, 40, 20);
       } catch (e) { }
     }
 
     doc.setFont('helvetica', 'bold');
-    doc.text(settings?.namaKepalaSekolah || 'Kepala Sekolah', sigX, currentY + 28);
+    doc.text(settings?.namaKepalaSekolah || 'Kepala Sekolah', sigCenterX, currentY + 32, { align: 'center' });
     doc.setFont('helvetica', 'normal');
     if (settings?.nipKepalaSekolah) {
-      doc.text(`NIP. ${settings.nipKepalaSekolah}`, sigX, currentY + 33);
+      doc.text(`NIP. ${settings.nipKepalaSekolah}`, sigCenterX, currentY + 37, { align: 'center' });
     }
 
     // 8. Catatan Tambahan (Bottom)
