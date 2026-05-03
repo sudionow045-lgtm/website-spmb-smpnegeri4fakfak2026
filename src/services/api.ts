@@ -286,6 +286,27 @@ const saveMockData = (data: AdminData[]) => {
 };
 
 export const getSettings = async (): Promise<AppSettings> => {
+  // Try to get from sessionStorage first for instant load
+  const cached = sessionStorage.getItem('appSettingsCache');
+  if (cached) {
+    try {
+      const parsed = JSON.parse(cached);
+      // Return cached but still fetch in background to update
+      getSettingsFromServer().then(fresh => {
+        if (JSON.stringify(fresh) !== cached) {
+          sessionStorage.setItem('appSettingsCache', JSON.stringify(fresh));
+        }
+      });
+      return parsed;
+    } catch (e) {
+      console.error("Failed to parse cached settings", e);
+    }
+  }
+
+  return await getSettingsFromServer();
+};
+
+const getSettingsFromServer = async (): Promise<AppSettings> => {
   if (!GAS_WEB_APP_URL) {
     await new Promise(resolve => setTimeout(resolve, 500));
     return { ...mockSettings };
@@ -303,6 +324,10 @@ export const getSettings = async (): Promise<AppSettings> => {
       panduanDokumen: typeof result.data.panduanDokumen === 'string' ? JSON.parse(result.data.panduanDokumen) : (result.data.panduanDokumen || mockSettings.panduanDokumen),
       panduanAlur: typeof result.data.panduanAlur === 'string' ? JSON.parse(result.data.panduanAlur) : (result.data.panduanAlur || mockSettings.panduanAlur)
     };
+
+    // Cache for next time
+    sessionStorage.setItem('appSettingsCache', JSON.stringify(sanitizedData));
+
     return sanitizedData;
   }
 
@@ -383,6 +408,26 @@ export const getSchoolInfo = async (npsn: string) => {
 };
 
 export const getRegistrations = async (): Promise<AdminData[]> => {
+  // Try to get from sessionStorage first
+  const cached = sessionStorage.getItem('registrationsCache');
+  if (cached) {
+    try {
+      const parsed = JSON.parse(cached);
+      getRegistrationsFromServer().then(fresh => {
+        if (JSON.stringify(fresh) !== cached) {
+          sessionStorage.setItem('registrationsCache', JSON.stringify(fresh));
+        }
+      });
+      return parsed;
+    } catch (e) {
+      console.error("Failed to parse cached registrations", e);
+    }
+  }
+
+  return await getRegistrationsFromServer();
+};
+
+const getRegistrationsFromServer = async (): Promise<AdminData[]> => {
   if (!GAS_WEB_APP_URL) {
     await new Promise(resolve => setTimeout(resolve, 1000));
     return [...mockData];
@@ -390,6 +435,7 @@ export const getRegistrations = async (): Promise<AdminData[]> => {
 
   const result = await safeFetch(`${GAS_WEB_APP_URL}?t=${Date.now()}`);
   if (result.status === "success") {
+    sessionStorage.setItem('registrationsCache', JSON.stringify(result.data));
     return result.data;
   }
 
