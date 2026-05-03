@@ -492,8 +492,12 @@ function handleCheckStatus(noPendaftaran) {
   
   const statusIdx = headers.indexOf("Status");
 
+  // Clean search query
+  const searchNo = String(noPendaftaran).trim().toUpperCase();
+
   for (let i = 1; i < data.length; i++) {
-    if (data[i][noRegIdx] === noPendaftaran) {
+    const rowNo = String(data[i][noRegIdx]).trim().toUpperCase();
+    if (rowNo === searchNo) {
       return ContentService.createTextOutput(JSON.stringify({
         status: "success",
         data: {
@@ -504,7 +508,7 @@ function handleCheckStatus(noPendaftaran) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
   }
-  return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Nomor pendaftaran tidak ditemukan" })).setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(JSON.stringify({ status: "error", message: "Nomor pendaftaran tidak ditemukan. Pastikan format benar (Contoh: SPMB-2026-001)" })).setMimeType(ContentService.MimeType.JSON);
 }
 
 function updateStatus(noPendaftaran, newStatus) {
