@@ -67,7 +67,7 @@ export default function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-slate-800 text-center text-sm text-slate-500 flex flex-col md:flex-row justify-between items-center">
-          <p>&copy; {new Date().getFullYear()} {(!settings?.namaSekolah || settings.namaSekolah === 'SDN Harapan Bangsa') ? 'SMP NEGERI 4 FAKFAK' : settings.namaSekolah}. Hak Cipta Dilindungi.</p>
+          <p>&copy; {new Date().getFullYear()} {(!settings?.namaSekolah || settings.namaSekolah === 'SMP NEGERI 4 FAKFAK') ? 'SMP NEGERI 4 FAKFAK' : settings.namaSekolah}. Hak Cipta Dilindungi.</p>
           <p className="mt-2 md:mt-0">Sistem SPMB Online Terintegrasi</p>
         </div>
       </div>
