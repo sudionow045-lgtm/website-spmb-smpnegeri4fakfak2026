@@ -27,12 +27,15 @@ export default function RegistrationForm() {
   const handleSearchSchool = async (npsn: string) => {
     if (!npsn || npsn.length < 8) return;
 
+    console.log("Searching school for NPSN:", npsn);
     setIsFetchingSchool(true);
     try {
       const response = await getSchoolInfo(npsn);
+      console.log("School API Response:", response);
 
-      if (response.status === 'success' && response.data.sekolah) {
+      if (response.status === 'success' && response.data?.sekolah) {
         const schoolName = response.data.sekolah;
+        console.log("Found School:", schoolName);
         setFormData(prev => ({ ...prev, 'Asal Sekolah': schoolName }));
         Swal.fire({
           icon: 'success',
@@ -68,12 +71,15 @@ export default function RegistrationForm() {
   };
 
   // Auto-fill school name when NPSN changes
+  // Commented out to avoid double triggers since we handle it in onChange
+  /*
   React.useEffect(() => {
     const npsnValue = formData['NPSN Sekolah'];
     if (npsnValue && npsnValue.length === 8) {
       handleSearchSchool(npsnValue);
     }
   }, [formData['NPSN Sekolah']]);
+  */
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, fieldId: string) => {
     const file = e.target.files?.[0];
@@ -468,6 +474,10 @@ export default function RegistrationForm() {
                   const val = e.target.value.replace(/\D/g, '');
                   if (val.length <= maxLength) {
                     setFormData(prev => ({ ...prev, [field.id]: val }));
+                    // Trigger school search if NPSN reaches 8 digits
+                    if (field.id === 'NPSN Sekolah' && val.length === 8) {
+                      handleSearchSchool(val);
+                    }
                   }
                 }}
                 className={`${commonClasses} ${field.id === 'NPSN Sekolah' ? 'pr-20' : ''}`}
