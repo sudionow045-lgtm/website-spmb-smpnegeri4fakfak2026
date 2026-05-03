@@ -4,7 +4,7 @@ import { Search, Filter, Download, Printer, CheckCircle, XCircle, Clock, FileTex
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { getRegistrations, updateStatus, AdminData, updateSettings, formatDateForInput } from '../services/api';
 import { cn, compressImage } from '../lib/utils';
 import { useNavigate } from 'react-router-dom';
@@ -225,73 +225,128 @@ export default function AdminDashboard() {
   };
 
   const printCard = (student: AdminData) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF() as any;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
 
-    // Header
-    doc.setFillColor(37, 99, 235); // blue-600
-    doc.rect(0, 0, 210, 40, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text("KARTU PENDAFTARAN SPMB", 105, 20, { align: "center" });
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "normal");
-    doc.text(settings?.namaSekolah || "Sekolah Dasar", 105, 30, { align: "center" });
+    // Helper for date formatting
+    const formatDateStr = (dateString: string) => {
+      if (!dateString) return '-';
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return dateString;
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${day}/${month}/${year}`;
+    };
 
-    // Content
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(12);
-
-    const startY = 60;
-    const lineHeight = 10;
-
-    doc.setFont("helvetica", "bold");
-    doc.text("No. Pendaftaran:", 20, startY);
-    doc.setFont("helvetica", "normal");
-    doc.text(student['No Pendaftaran'], 70, startY);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("Nama Lengkap:", 20, startY + lineHeight);
-    doc.setFont("helvetica", "normal");
-    doc.text(getFieldValue(student, 'Nama Lengkap') || '-', 70, startY + lineHeight);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("NIK:", 20, startY + lineHeight * 2);
-    doc.setFont("helvetica", "normal");
-    doc.text(getFieldValue(student, 'NIK') || '-', 70, startY + lineHeight * 2);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("TTL:", 20, startY + lineHeight * 3);
-    doc.setFont("helvetica", "normal");
-    doc.text(`${getFieldValue(student, 'Tempat Lahir') || '-'}, ${formatDate(getFieldValue(student, 'Tanggal Lahir'))}`, 70, startY + lineHeight * 3);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("Usia:", 20, startY + lineHeight * 4);
-    doc.setFont("helvetica", "normal");
-    doc.text(calculateAge(getFieldValue(student, 'Tanggal Lahir'), settings?.tanggalCutoffUsia), 70, startY + lineHeight * 4);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("Batas Usia:", 20, startY + lineHeight * 5);
-    doc.setFont("helvetica", "normal");
-    doc.text(formatDate(settings?.tanggalCutoffUsia || ''), 70, startY + lineHeight * 5);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("Status:", 20, startY + lineHeight * 6);
-    doc.setFont("helvetica", "normal");
-    doc.text(student.Status, 70, startY + lineHeight * 6);
-
-    // Footer
-    doc.setDrawColor(200, 200, 200);
-    doc.line(20, startY + lineHeight * 8, 190, startY + lineHeight * 8);
-    doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Kartu ini adalah bukti sah pendaftaran SPMB ${settings?.namaSekolah || 'Sekolah'}.`, 105, startY + lineHeight * 9, { align: "center" });
-    doc.text(`Dicetak pada: ${new Date().toLocaleString()}`, 105, startY + lineHeight * 9.5, { align: "center" });
-
-    // Box around everything
-    doc.setDrawColor(37, 99, 235);
+    // 1. Draw Professional Card Border
+    doc.setDrawColor(37, 99, 235); // blue-600
     doc.setLineWidth(1);
-    doc.rect(10, 10, 190, 160);
+    doc.rect(margin, margin, pageWidth - (margin * 2), 160);
+    doc.setLineWidth(0.2);
+    doc.rect(margin + 2, margin + 2, pageWidth - (margin * 2) - 4, 156);
+
+    // 2. Header
+    doc.setFillColor(37, 99, 235);
+    doc.rect(margin + 2, margin + 2, pageWidth - (margin * 2) - 4, 35, 'F');
+
+    // Logo if exists
+    if (settings?.logoSekolah) {
+      try {
+        doc.addImage(settings.logoSekolah, 'PNG', margin + 8, margin + 7, 25, 25);
+      } catch (e) { }
+    }
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("KARTU PENDAFTARAN SPMB", 110, margin + 15, { align: "center" });
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    const schoolName = settings?.namaSekolah || 'SMP NEGERI 4 FAKFAK';
+    doc.text(schoolName, 110, margin + 23, { align: "center" });
+
+    doc.setFontSize(9);
+    doc.text(`Tahun Pelajaran: ${settings?.tahunPendaftaran || '2026/2027'}`, 110, margin + 30, { align: "center" });
+
+    // 3. Content
+    doc.setTextColor(0, 0, 0);
+    let currentY = margin + 45;
+
+    // Student Photo (Top Right)
+    const photoField = settings?.formFields?.find(f => f.label.toLowerCase().includes('foto') || f.label.toLowerCase().includes('pas foto'));
+    const photoUrl = photoField ? getFieldValue(student, photoField.id) : null;
+
+    if (photoUrl) {
+      try {
+        doc.setDrawColor(200, 200, 200);
+        doc.rect(pageWidth - margin - 40, currentY, 30, 40); // 3x4 ratio
+        doc.addImage(photoUrl, 'JPEG', pageWidth - margin - 39, currentY + 1, 28, 38);
+      } catch (e) {
+        doc.setFontSize(8);
+        doc.text("FOTO 3X4", pageWidth - margin - 25, currentY + 20, { align: 'center' });
+      }
+    } else {
+      doc.setDrawColor(200, 200, 200);
+      doc.rect(pageWidth - margin - 40, currentY, 30, 40);
+      doc.setFontSize(8);
+      doc.setTextColor(150, 150, 150);
+      doc.text("PAS FOTO 3X4", pageWidth - margin - 25, currentY + 20, { align: 'center' });
+    }
+
+    // 4. Data Table
+    const tableData = [
+      ['No. Pendaftaran', ': ' + (student['No Pendaftaran'] || '-')],
+      ['Nama Lengkap', ': ' + (getFieldValue(student, 'Nama Lengkap') || '-')],
+      ['NISN', ': ' + (getFieldValue(student, 'NISN') || '-')],
+      ['NIK', ': ' + (getFieldValue(student, 'NIK') || '-')],
+      ['Tempat, Tgl Lahir', ': ' + (getFieldValue(student, 'Tempat Lahir') || '-') + ', ' + formatDateStr(getFieldValue(student, 'Tanggal Lahir'))],
+      ['Jenis Kelamin', ': ' + (getFieldValue(student, 'Jenis Kelamin') || '-')],
+      ['Sekolah Asal', ': ' + (getFieldValue(student, 'Nama Sekolah Asal (SD/MI)') || '-')],
+      ['Status', ': ' + (student.Status || 'Proses')]
+    ];
+
+    autoTable(doc, {
+      startY: currentY,
+      margin: { left: margin + 5, right: margin + 45 },
+      body: tableData,
+      theme: 'plain',
+      styles: { fontSize: 10, cellPadding: 2.5, textColor: [0, 0, 0] },
+      columnStyles: {
+        0: { cellWidth: 35, fontStyle: 'bold' }
+      }
+    });
+
+    currentY = (doc as any).lastAutoTable.finalY + 15;
+
+    // 5. Signature & Stamp Area
+    const sigX = pageWidth - margin - 70;
+    const dateStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    doc.setFontSize(9);
+    doc.text(`${settings?.tempatSurat || 'Fakfak'}, ${dateStr}`, sigX, currentY);
+    doc.text("Panitia SPMB,", sigX, currentY + 5);
+
+    if (settings?.stempelSekolah) {
+      try {
+        doc.addImage(settings.stempelSekolah, 'PNG', sigX - 10, currentY + 7, 25, 25);
+      } catch (e) { }
+    }
+
+    doc.setFont("helvetica", "bold");
+    doc.text(settings?.namaKepalaSekolah || "Kepala Sekolah", sigX, currentY + 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(`NIP. ${settings?.nipKepalaSekolah || '-'}`, sigX, currentY + 35);
+
+    // 6. Footer Info
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.setDrawColor(230, 230, 230);
+    doc.line(margin + 5, margin + 150, pageWidth - margin - 5, margin + 150);
+    doc.text("Kartu ini wajib dibawa saat verifikasi berkas dan tes seleksi.", 105, margin + 155, { align: "center" });
 
     doc.save(`Kartu_SPMB_${student['No Pendaftaran']}.pdf`);
   };
