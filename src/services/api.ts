@@ -157,7 +157,6 @@ export const getInitialMockSettings = (): AppSettings => {
       { id: "Desa/Kelurahan", label: "Desa / Kelurahan", type: "text", required: true },
       { id: "Kecamatan", label: "Kecamatan", type: "text", required: true },
       { id: "Kode Pos", label: "Kode Pos", type: "number", required: true },
-      { id: "Jarak Rumah Dengan Sekolah", label: "Jarak Rumah Dengan Sekolah (km)", type: "number", required: true },
       { id: "Jenis Tinggal", label: "Jenis Tinggal", type: "select", options: ["Bersama Orang Tua", "Wali", "Kos", "Asrama", "Panti Asuhan", "Lainnya"], required: true },
       { id: "Alat Transportasi", label: "Alat Transportasi ke Sekolah", type: "select", options: ["Jalan kaki", "Kendaraan pribadi", "Kendaraan umum", "Jemputan sekolah", "Kereta api", "Ojek", "Andong/Bendi/Sado/Kuda", "Perahu penyeberangan", "Lainnya"], required: true },
 
@@ -186,6 +185,7 @@ export const getInitialMockSettings = (): AppSettings => {
       { id: "Berat Badan", label: "Berat Badan (kg)", type: "number", required: true },
       { id: "Apakah Penerima KIP?", label: "Apakah Penerima KIP?", type: "select", options: ["Tidak", "Ya"], required: true },
       { id: "Jumlah Saudara Kandung", label: "Jumlah Saudara Kandung", type: "number", required: true },
+      { id: "Jarak Rumah Dengan Sekolah", label: "Jarak Rumah Dengan Sekolah (km)", type: "number", required: true },
 
       { id: "header_berkas", label: "BERKAS", type: "header", required: false },
       { id: "Pas Foto 3x4", label: "Pas Foto 3x4 (Seragam SD)", type: "file", required: true },
@@ -234,12 +234,13 @@ export const getInitialMockSettings = (): AppSettings => {
       const hasStatusAnak = parsed.formFields?.some((f: any) => f.id === "Status Anak");
       const hasHeaders = parsed.formFields?.some((f: any) => f.id === "header_identitas");
       const hasNamaIbu = parsed.formFields?.some((f: any) => f.id === "Nama Ibu Kandung");
+      const hasJarak = parsed.formFields?.some((f: any) => f.id === "Jarak Rumah Dengan Sekolah");
       const hasHeaderImg = parsed.gambarHeaderBeranda === "https://i.imgur.com/dyUirbi.jpeg";
       const hasNewRequirements = parsed.persyaratanDaftarUlang?.includes("Sertifikat TKA (1 Lembar)");
       const isWrongSchoolName = parsed.namaSekolah !== "SMP NEGERI 4 FAKFAK";
       const isWrongCutoffDate = parsed.tanggalCutoffUsia !== "2026-07-01";
 
-      if (!hasNPSN || !hasTKA || !hasKIP || !hasStatusAnak || !hasHeaders || !hasNamaIbu || !hasHeaderImg || !hasNewRequirements || isWrongSchoolName || isWrongCutoffDate) {
+      if (!hasNPSN || !hasTKA || !hasKIP || !hasStatusAnak || !hasHeaders || !hasNamaIbu || !hasJarak || !hasHeaderImg || !hasNewRequirements || isWrongSchoolName || isWrongCutoffDate) {
         // Jika tidak ditemukan atau nama sekolah salah/lama, hapus local storage untuk memaksa reload pengaturan default baru
         localStorage.removeItem('mockSettings');
         return defaultSettings;
