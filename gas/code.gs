@@ -483,11 +483,18 @@ function handleCheckStatus(noPendaftaran) {
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
   const noRegIdx = headers.indexOf("No Pendaftaran");
-  let namaIdx = headers.indexOf("Nama Lengkap");
   
-  // Fallback if "Nama Lengkap" is not found (try the full label)
-  if (namaIdx === -1) {
-    namaIdx = headers.indexOf("Nama Lengkap (Sesuai Ijazah/Akta)");
+  // Find Name column more robustly
+  let namaIdx = -1;
+  const nameKeywords = ["Nama Lengkap", "Nama Peserta", "Nama Siswa"];
+  for (let k = 0; k < nameKeywords.length; k++) {
+    for (let h = 0; h < headers.length; h++) {
+      if (headers[h].toString().toLowerCase().includes(nameKeywords[k].toLowerCase())) {
+        namaIdx = h;
+        break;
+      }
+    }
+    if (namaIdx !== -1) break;
   }
   
   const statusIdx = headers.indexOf("Status");
@@ -502,7 +509,7 @@ function handleCheckStatus(noPendaftaran) {
         status: "success",
         data: {
           noPendaftaran: data[i][noRegIdx],
-          namaLengkap: namaIdx !== -1 ? data[i][namaIdx] : "Siswa",
+          namaLengkap: (namaIdx !== -1 && data[i][namaIdx]) ? data[i][namaIdx] : "Siswa (Nama tidak ditemukan)",
           status: statusIdx !== -1 ? data[i][statusIdx] : "Proses"
         }
       })).setMimeType(ContentService.MimeType.JSON);
