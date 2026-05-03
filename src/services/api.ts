@@ -1,7 +1,7 @@
 // Service to interact with Google Apps Script Backend
 
 // To use the real backend, replace this URL with your deployed Google Apps Script Web App URL
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwz8H_GQCcmfUI-MT8VUPlTfv9o5kIfVepPCeBU0fRzZ7kusDuJFVaTC3n_riuX8l9w/exec";
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzSWTsypx5srjK14RpTmbJdwkWn1H7ScjRSMBRAFjY3HmuchVPUMXw9Tml_OL8Pv6kA/exec";
 
 // Helper function to handle fetch with better error reporting
 const safeFetch = async (url: string, options?: RequestInit) => {
