@@ -28,8 +28,11 @@ export default function CheckStatus() {
     setError('');
     setResult(null);
 
+    // Clean up input: trim and uppercase to match database format
+    const cleanNoPendaftaran = noPendaftaran.trim().toUpperCase();
+
     try {
-      const response = await checkStatus(noPendaftaran);
+      const response = await checkStatus(cleanNoPendaftaran);
       if (response.status === 'success') {
         setResult(response.data);
       } else {
