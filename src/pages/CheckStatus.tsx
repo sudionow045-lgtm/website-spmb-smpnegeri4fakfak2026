@@ -174,15 +174,24 @@ export default function CheckStatus() {
 
     if (settings?.stempelSekolah) {
       try {
+        // Set higher transparency for stamp
+        const gState = new (doc as any).GState({ opacity: 0.6 });
+        doc.setGState(gState);
+
         // Position stamp slightly to the left of center
         doc.addImage(settings.stempelSekolah, 'PNG', sigCenterX - 30, currentY + 7, 30, 30);
-      } catch (e) { }
+
+        // Reset transparency
+        doc.setGState(new (doc as any).GState({ opacity: 1.0 }));
+      } catch (e) {
+        doc.addImage(settings.stempelSekolah, 'PNG', sigCenterX - 30, currentY + 7, 30, 30);
+      }
     }
 
     if (settings?.tandaTanganKepalaSekolah) {
       try {
-        // Set transparency for signature to blend with stamp
-        const gState = new (doc as any).GState({ opacity: 0.8 });
+        // Set much higher transparency for signature to blend better
+        const gState = new (doc as any).GState({ opacity: 0.4 });
         doc.setGState(gState);
 
         // Position signature centered
