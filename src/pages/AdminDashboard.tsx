@@ -1482,7 +1482,15 @@ export default function AdminDashboard() {
                           const photoUrl = getStudentPhoto(selectedStudent);
                           return photoUrl ? (
                             <>
-                              <img src={photoUrl} alt="Profile" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                              <img
+                                src={photoUrl}
+                                alt="Profile"
+                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                style={{
+                                  imageRendering: 'crisp-edges',
+                                  filter: 'brightness(1.02) contrast(1.05)'
+                                }}
+                              />
                               <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <Maximize2 size={20} className="text-white" />
                               </div>
@@ -1691,6 +1699,10 @@ export default function AdminDashboard() {
                   src={showPhotoModal}
                   alt="Full Profile"
                   className="max-h-[80vh] w-auto object-contain"
+                  style={{
+                    imageRendering: 'auto',
+                    filter: 'brightness(1.02) contrast(1.05) saturate(1.1)'
+                  }}
                 />
               </div>
               <p className="mt-4 text-white font-medium bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">
