@@ -45,149 +45,152 @@ export default function CheckStatus() {
   const printBuktiLulus = (data: any) => {
     if (!data) return;
 
-    const doc = new jsPDF();
+    const doc = new jsPDF() as any;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 20;
     let currentY = 20;
 
-    // Header (Kop Surat)
+    // 1. Draw Page Border
+    doc.setDrawColor(37, 99, 235); // blue-600
+    doc.setLineWidth(0.5);
+    doc.rect(margin - 10, margin - 10, pageWidth - (margin * 2) + 20, pageHeight - (margin * 2) + 20);
+
+    // 2. Header (Kop Surat)
     if (settings?.kopSurat) {
       try {
-        doc.addImage(settings.kopSurat, 'JPEG', 20, 10, 170, 30);
-        currentY = 45;
-        doc.line(20, currentY, 190, currentY);
+        doc.addImage(settings.kopSurat, 'JPEG', margin, 15, pageWidth - (margin * 2), 35);
+        currentY = 55;
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.8);
+        doc.line(margin, currentY, pageWidth - margin, currentY);
+        doc.setLineWidth(0.2);
+        doc.line(margin, currentY + 1, pageWidth - margin, currentY + 1);
         currentY += 10;
-
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        doc.text('BUKTI KELULUSAN SPMB', 105, currentY, { align: 'center' });
-        currentY += 8;
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`Tahun Ajaran ${new Date().getFullYear()}/${new Date().getFullYear() + 1}`, 105, currentY, { align: 'center' });
-        currentY += 6;
-        if (settings?.nomorSurat) {
-          doc.setFontSize(11);
-          doc.text(`Nomor: ${settings.nomorSurat}`, 105, currentY, { align: 'center' });
-          currentY += 6;
-        }
-        currentY += 4;
       } catch (e) {
         console.error("Error adding kop surat", e);
-        doc.setFontSize(16);
-        doc.setFont('helvetica', 'bold');
-        doc.text('BUKTI KELULUSAN SPMB', 105, currentY, { align: 'center' });
-        currentY += 8;
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`Tahun Ajaran ${new Date().getFullYear()}/${new Date().getFullYear() + 1}`, 105, currentY, { align: 'center' });
-        currentY += 6;
-        if (settings?.nomorSurat) {
-          doc.setFontSize(11);
-          doc.text(`Nomor: ${settings.nomorSurat}`, 105, currentY, { align: 'center' });
-          currentY += 6;
-        }
-        doc.line(20, currentY, 190, currentY);
-        currentY += 10;
       }
     } else {
-      doc.setFontSize(16);
+      // Default Header if no kopSurat
+      doc.setFontSize(18);
       doc.setFont('helvetica', 'bold');
-      doc.text('BUKTI KELULUSAN SPMB', 105, currentY, { align: 'center' });
+      doc.text(settings?.namaSekolah || 'SMP NEGERI 4 FAKFAK', 105, currentY, { align: 'center' });
       currentY += 8;
-      doc.setFontSize(12);
+      doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Tahun Ajaran ${new Date().getFullYear()}/${new Date().getFullYear() + 1}`, 105, currentY, { align: 'center' });
-      currentY += 6;
-      if (settings?.nomorSurat) {
-        doc.setFontSize(11);
-        doc.text(`Nomor: ${settings.nomorSurat}`, 105, currentY, { align: 'center' });
-        currentY += 6;
-      }
-      doc.line(20, currentY, 190, currentY);
+      doc.text(settings?.alamat || '', 105, currentY, { align: 'center' });
+      currentY += 10;
+      doc.setLineWidth(0.8);
+      doc.line(margin, currentY, pageWidth - margin, currentY);
       currentY += 10;
     }
 
-    // Content
+    // 3. Title
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('BUKTI KELULUSAN SPMB', 105, currentY, { align: 'center' });
+    currentY += 8;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Tahun Ajaran ${settings?.tahunPendaftaran || `${new Date().getFullYear()}/${new Date().getFullYear() + 1}`}`, 105, currentY, { align: 'center' });
+    currentY += 6;
+    if (settings?.nomorSurat) {
+      doc.setFontSize(11);
+      doc.text(`Nomor: ${settings.nomorSurat}`, 105, currentY, { align: 'center' });
+      currentY += 6;
+    }
+    currentY += 10;
+
+    // 4. Content Text
     doc.setFontSize(11);
-    doc.text('Berdasarkan hasil seleksi Penerimaan Peserta Didik Baru (SPMB),', 20, currentY);
+    doc.text('Berdasarkan hasil seleksi Penerimaan Peserta Didik Baru (SPMB),', margin, currentY);
     currentY += 7;
-    doc.text('menyatakan bahwa:', 20, currentY);
-    currentY += 13;
+    doc.text('Panitia Seleksi menyatakan bahwa:', margin, currentY);
+    currentY += 15;
 
-    const lineSpacing = 8;
+    // 5. Data Table (Simplified for certificate look)
+    doc.autoTable({
+      startY: currentY,
+      margin: { left: margin + 10, right: margin + 10 },
+      body: [
+        ['No. Pendaftaran', ': ' + (data.noPendaftaran || '-')],
+        ['Nama Lengkap', ': ' + (data.namaLengkap || '-')],
+        ['Status', { content: ': LULUS', styles: { fontStyle: 'bold', textColor: [0, 128, 0] } }]
+      ],
+      theme: 'plain',
+      styles: { fontSize: 12, cellPadding: 3 },
+      columnStyles: {
+        0: { cellWidth: 50, fontStyle: 'bold' }
+      }
+    });
 
+    currentY = doc.lastAutoTable.finalY + 15;
+
+    // 6. Requirements
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text('No. Pendaftaran', 30, currentY);
-    doc.text(':', 70, currentY);
-    doc.text(data.noPendaftaran || '-', 75, currentY);
-
+    doc.text('Keterangan:', margin, currentY);
+    currentY += 7;
     doc.setFont('helvetica', 'normal');
-    doc.text('Nama Lengkap', 30, currentY + lineSpacing);
-    doc.text(':', 70, currentY + lineSpacing);
-    doc.text(data.namaLengkap || '-', 75, currentY + lineSpacing);
+    doc.text('Peserta yang dinyatakan LULUS diharapkan segera melakukan daftar ulang pada:', margin, currentY);
+    currentY += 7;
+    
+    if (settings?.tanggalDaftarUlang) {
+      const tgl = new Date(settings.tanggalDaftarUlang).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+      doc.text(`Tanggal: ${tgl}`, margin + 5, currentY);
+      currentY += 7;
+    }
 
-    doc.text('Status', 30, currentY + lineSpacing * 2);
-    doc.text(':', 70, currentY + lineSpacing * 2);
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(0, 128, 0); // Green
-    doc.text('LULUS', 75, currentY + lineSpacing * 2);
-    doc.setTextColor(0, 0, 0); // Reset to black
+    doc.text('Dengan membawa persyaratan sebagai berikut:', margin, currentY);
+    currentY += 7;
 
-    // Requirements
-    currentY += lineSpacing * 4;
-    doc.setFont('helvetica', 'normal');
-    doc.text('Diharapkan segera melakukan daftar ulang dengan membawa persyaratan berikut:', 20, currentY);
-
-    currentY += lineSpacing;
-    const reqText = settings?.persyaratanDaftarUlang || '1. Bukti Kelulusan ini (dicetak)\n2. Fotokopi Akta Kelahiran (2 lembar)\n3. Fotokopi Kartu Keluarga (2 lembar)\n4. Pas Foto 3x4 (4 lembar)\n5. Melakukan pembayaran administrasi awal';
-    const splitReq = doc.splitTextToSize(reqText, 160);
-    doc.text(splitReq, 25, currentY);
+    const reqText = settings?.persyaratanDaftarUlang || '1. Bukti Kelulusan ini (dicetak)\n2. Fotokopi Akta Kelahiran (2 lembar)\n3. Fotokopi Kartu Keluarga (2 lembar)\n4. Pas Foto 3x4 (4 lembar)';
+    const splitReq = doc.splitTextToSize(reqText, pageWidth - (margin * 2) - 10);
+    doc.text(splitReq, margin + 5, currentY);
 
     currentY += splitReq.length * 6 + 20;
 
-    // Signature Area
+    // 7. Signature Area
     const today = new Date();
     const dateStr = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
-    const tempat = settings?.tempatSurat || '....................';
+    const tempat = settings?.tempatSurat || 'Fakfak';
     const tanggal = settings?.tanggalSurat || dateStr;
 
-    doc.text(`${tempat}, ${tanggal}`, 140, currentY);
-    doc.text('Kepala Sekolah', 140, currentY + 6);
+    if (currentY > pageHeight - 60) {
+      doc.addPage();
+      currentY = margin + 20;
+    }
+
+    const sigX = pageWidth - margin - 70;
+    doc.text(`${tempat}, ${tanggal}`, sigX, currentY);
+    doc.text('Kepala Sekolah,', sigX, currentY + 6);
 
     if (settings?.stempelSekolah) {
       try {
-        doc.addImage(settings.stempelSekolah, 'PNG', 120, currentY + 8, 30, 30);
-      } catch (e) {
-        console.error("Error adding stempel", e);
-      }
+        doc.addImage(settings.stempelSekolah, 'PNG', sigX - 15, currentY + 8, 35, 35);
+      } catch (e) {}
     }
 
     if (settings?.tandaTanganKepalaSekolah) {
       try {
-        doc.addImage(settings.tandaTanganKepalaSekolah, 'PNG', 140, currentY + 10, 40, 20);
-      } catch (e) {
-        console.error("Error adding tanda tangan", e);
-      }
+        doc.addImage(settings.tandaTanganKepalaSekolah, 'PNG', sigX, currentY + 10, 45, 20);
+      } catch (e) {}
     }
 
     doc.setFont('helvetica', 'bold');
-    doc.text(settings?.namaKepalaSekolah || 'Kepala Sekolah', 140, currentY + 35);
+    doc.text(settings?.namaKepalaSekolah || 'Kepala Sekolah', sigX, currentY + 38);
     doc.setFont('helvetica', 'normal');
     if (settings?.nipKepalaSekolah) {
-      doc.text(`NIP. ${settings.nipKepalaSekolah}`, 140, currentY + 40);
+      doc.text(`NIP. ${settings.nipKepalaSekolah}`, sigX, currentY + 43);
     }
 
-    // Catatan Tambahan
+    // 8. Catatan Tambahan
     if (settings?.catatanTambahan) {
-      doc.setFontSize(10);
+      doc.setFontSize(9);
       doc.setFont('helvetica', 'italic');
-      const splitCatatan = doc.splitTextToSize(`Catatan: ${settings.catatanTambahan}`, 170);
-      doc.text(splitCatatan, 20, 260);
+      const splitCatatan = doc.splitTextToSize(`*Catatan: ${settings.catatanTambahan}`, pageWidth - (margin * 2));
+      doc.text(splitCatatan, margin, pageHeight - margin - 10);
     }
-
-    // Footer
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Dicetak pada: ${dateStr}`, 20, 280);
 
     doc.save(`Bukti_Kelulusan_${data.noPendaftaran}.pdf`);
   };
