@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { submitRegistration, RegistrationData, FormField, getSchoolInfo } from '../services/api';
 import { useSettings } from '../context/SettingsContext';
 import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import { compressImage } from '../lib/utils';
 
 export default function RegistrationForm() {
@@ -111,26 +112,12 @@ export default function RegistrationForm() {
   };
 
   const printProof = (noPendaftaran: string) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF() as any;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 15;
 
-    // Header
-    doc.setFillColor(37, 99, 235); // blue-600
-    doc.rect(0, 0, 210, 40, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.text("BUKTI PENDAFTARAN SPMB", 105, 20, { align: "center" });
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "normal");
-    doc.text((!settings?.namaSekolah || settings.namaSekolah === 'SMP NEGERI 4 FAKFAK') ? 'SMP NEGERI 4 FAKFAK' : settings.namaSekolah, 105, 30, { align: "center" });
-
-    // Content
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(12);
-
-    let startY = 60;
-    const lineHeight = 10;
-
+    // Helper for date formatting
     const formatDate = (dateString: string) => {
       if (!dateString) return '-';
       const date = new Date(dateString);
@@ -141,58 +128,130 @@ export default function RegistrationForm() {
       return `${day}/${month}/${year}`;
     };
 
-    doc.setFont("helvetica", "bold");
-    doc.text("No. Pendaftaran", 20, startY);
-    doc.text(":", 70, startY);
-    doc.text(noPendaftaran, 75, startY);
-    startY += lineHeight;
+    // 1. Draw Page Border
+    doc.setDrawColor(37, 99, 235); // blue-600
+    doc.setLineWidth(0.5);
+    doc.rect(margin - 5, margin - 5, pageWidth - (margin * 2) + 10, pageHeight - (margin * 2) + 10);
 
+    // 2. Header / Kop Surat
+    let currentY = margin;
+    if (settings?.kopSurat) {
+      try {
+        doc.addImage(settings.kopSurat, 'JPEG', margin, margin, pageWidth - (margin * 2), 30);
+        currentY += 35;
+      } catch (e) {
+        console.error("Error adding kop surat", e);
+      }
+    } else {
+      // Default Professional Header
+      doc.setFillColor(37, 99, 235);
+      doc.rect(margin, margin, pageWidth - (margin * 2), 35, 'F');
+
+      // Logo if exists
+      if (settings?.logoSekolah) {
+        try {
+          doc.addImage(settings.logoSekolah, 'PNG', margin + 5, margin + 5, 25, 25);
+        } catch (e) { }
+      }
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.text("BUKTI PENDAFTARAN SPMB", 105, margin + 12, { align: "center" });
+
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      const schoolName = settings?.namaSekolah || 'SMP NEGERI 4 FAKFAK';
+      doc.text(schoolName, 105, margin + 20, { align: "center" });
+
+      doc.setFontSize(9);
+      const schoolAddr = settings?.alamat || '';
+      const splitAddr = doc.splitTextToSize(schoolAddr, pageWidth - 80);
+      doc.text(splitAddr, 105, margin + 26, { align: "center" });
+
+      currentY += 45;
+    }
+
+    // 3. Registration Info & Photo Area
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(`NO. PENDAFTARAN : ${noPendaftaran}`, margin, currentY);
+
+    const today = new Date();
+    const dateStr = `${today.getDate().toString().padStart(2, '0')}/${(today.getMonth() + 1).toString().padStart(2, '0')}/${today.getFullYear()}`;
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(`Dicetak pada: ${dateStr}`, pageWidth - margin, currentY, { align: 'right' });
+
+    currentY += 10;
+
+    // Student Photo (Top Right)
+    const photoField = settings?.formFields?.find(f => f.label.toLowerCase().includes('foto') || f.label.toLowerCase().includes('pas foto'));
+    if (photoField && formData[photoField.label]) {
+      try {
+        doc.setDrawColor(200, 200, 200);
+        doc.rect(pageWidth - margin - 30, currentY, 30, 40); // 3x4 ratio
+        doc.addImage(formData[photoField.label], 'JPEG', pageWidth - margin - 29, currentY + 1, 28, 38);
+      } catch (e) { }
+    }
+
+    // 4. Data Table
+    const tableData: any[] = [];
 
     settings?.formFields?.forEach(field => {
       if (field.type === 'header') {
-        startY += 5;
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(37, 99, 235);
-        doc.text(field.label, 20, startY);
-        startY += lineHeight;
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(0, 0, 0);
+        tableData.push([{ content: field.label, colSpan: 2, styles: { fillColor: [240, 245, 255], textColor: [37, 99, 235], fontStyle: 'bold', fontSize: 10 } }]);
       } else if (field.type !== 'file') {
-        const isSmallField = [
-          'Nama Lengkap (Sesuai Ijazah/Akta)',
-          'NIK / No. KITAS (Untuk WNA)',
-          'Alat Transportasi ke Sekolah',
-          'Nama Sekolah Asal (SD/MI)'
-        ].includes(field.label);
-
-        if (isSmallField) {
-          doc.setFontSize(10);
-        } else {
-          doc.setFontSize(11);
-        }
-
-        doc.setFont("helvetica", "bold");
-        doc.text(field.label, 20, startY);
-        doc.text(":", 70, startY);
-        doc.setFont("helvetica", "normal");
-
         let value = formData[field.label] || '-';
-        if (field.type === 'date') {
-          value = formatDate(value);
-        }
+        if (field.type === 'date') value = formatDate(value);
 
-        // Handle long text
-        const splitText = doc.splitTextToSize(value, 115);
-        doc.text(splitText, 75, startY);
-        startY += (isSmallField ? 8 : lineHeight) * splitText.length;
+        tableData.push([
+          { content: field.label, styles: { cellWidth: 60, fontStyle: 'bold', fontSize: 9 } },
+          { content: value, styles: { fontSize: 9 } }
+        ]);
       }
     });
 
-    // Footer
+    doc.autoTable({
+      startY: currentY,
+      margin: { left: margin, right: margin + 35 }, // Leave space for photo
+      body: tableData,
+      theme: 'grid',
+      styles: { cellPadding: 2, fontSize: 9, valign: 'middle' },
+      columnStyles: {
+        0: { fillColor: [250, 250, 250] }
+      },
+      didDrawPage: (data: any) => {
+        // Adjust footer position if needed
+      }
+    });
+
+    currentY = doc.lastAutoTable.finalY + 15;
+
+    // 5. Signature Area
+    const tempat = settings?.tempatSurat || 'Fakfak';
+    const tanggal = settings?.tanggalSurat || dateStr;
+
+    if (currentY > pageHeight - 50) {
+      doc.addPage();
+      currentY = margin + 10;
+    }
+
     doc.setFontSize(10);
-    doc.setTextColor(100, 100, 100);
-    doc.text("Simpan bukti pendaftaran ini untuk mengecek status kelulusan.", 105, 280, { align: "center" });
+    doc.text(`${tempat}, ${tanggal}`, pageWidth - margin - 60, currentY);
+    doc.text('Pendaftar/Orang Tua,', pageWidth - margin - 60, currentY + 6);
+
+    doc.setDrawColor(150, 150, 150);
+    doc.line(pageWidth - margin - 60, currentY + 30, pageWidth - margin - 10, currentY + 30);
+    doc.setFontSize(8);
+    doc.text('( Nama Terang & Tanda Tangan )', pageWidth - margin - 60, currentY + 34);
+
+    // 6. Professional Footer
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text("Sistem Informasi SPMB Online - SMP NEGERI 4 FAKFAK", 105, pageHeight - margin, { align: "center" });
+    doc.text("Simpan bukti ini sebagai syarat verifikasi berkas dan cek kelulusan.", 105, pageHeight - margin + 4, { align: "center" });
 
     doc.save(`Bukti_Pendaftaran_${noPendaftaran}.pdf`);
   };
