@@ -119,7 +119,7 @@ export default function CheckStatus() {
       margin: { left: margin + 10, right: margin + 10 },
       body: [
         ['No. Pendaftaran', ': ' + (data.noPendaftaran || data['No Pendaftaran'] || '-')],
-        ['Nama Lengkap', ': ' + (studentName !== '-' ? studentName : 'SISWA (NAMA TIDAK DITEMUKAN)')],
+        ['Nama Lengkap', ': ' + (studentName !== '-' ? studentName : 'Siswa')],
         ['Status', { content: ': LULUS', styles: { fontStyle: 'bold', textColor: [0, 128, 0] } }]
       ],
       theme: 'plain',
