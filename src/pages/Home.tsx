@@ -128,7 +128,7 @@ export default function Home() {
               {
                 icon: <Trophy className="text-amber-500" size={32} />,
                 title: "Fasilitas Lengkap",
-                desc: "Ruang kelas nyaman, perpustakaan, Ruang komputer, dan fasilitas olahraga yang memadai."
+                desc: "Ruang kelas nyaman, Ruang Perpustakaan, Ruang Romputer, dan Fasilitas olahraga."
               }
             ].map((feature, idx) => (
               <motion.div
@@ -240,7 +240,7 @@ export default function Home() {
                 step: "02",
                 icon: <BookOpen size={28} />,
                 title: "Upload Berkas",
-                desc: "Unggah dokumen persyaratan (Foto, KK, Akta Kelahiran)."
+                desc: "Unggah dokumen yang di persyaratan."
               },
               {
                 step: "03",
