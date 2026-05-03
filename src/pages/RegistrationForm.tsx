@@ -33,7 +33,7 @@ export default function RegistrationForm() {
 
       if (response.status === 'success' && response.data.sekolah) {
         const schoolName = response.data.sekolah;
-        setFormData(prev => ({ ...prev, 'Nama Sekolah Asal (SD/MI)': schoolName }));
+        setFormData(prev => ({ ...prev, 'Asal Sekolah': schoolName }));
         Swal.fire({
           icon: 'success',
           title: 'Sekolah Ditemukan',
@@ -69,11 +69,11 @@ export default function RegistrationForm() {
 
   // Auto-fill school name when NPSN changes
   React.useEffect(() => {
-    const npsnValue = formData['NPSN Sekolah Asal'];
+    const npsnValue = formData['NPSN Sekolah'];
     if (npsnValue && npsnValue.length === 8) {
       handleSearchSchool(npsnValue);
     }
-  }, [formData['NPSN Sekolah Asal']]);
+  }, [formData['NPSN Sekolah']]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>, fieldId: string) => {
     const file = e.target.files?.[0];
@@ -188,11 +188,11 @@ export default function RegistrationForm() {
 
     // Student Photo (Top Right)
     const photoField = settings?.formFields?.find(f => f.label.toLowerCase().includes('foto') || f.label.toLowerCase().includes('pas foto'));
-    if (photoField && formData[photoField.label]) {
+    if (photoField && formData[photoField.id]) {
       try {
         doc.setDrawColor(200, 200, 200);
         doc.rect(pageWidth - margin - 30, currentY, 30, 40); // 3x4 ratio
-        doc.addImage(formData[photoField.label], 'JPEG', pageWidth - margin - 29, currentY + 1, 28, 38);
+        doc.addImage(formData[photoField.id], 'JPEG', pageWidth - margin - 29, currentY + 1, 28, 38);
       } catch (e) { }
     }
 
@@ -203,7 +203,7 @@ export default function RegistrationForm() {
       if (field.type === 'header') {
         tableData.push([{ content: field.label, colSpan: 2, styles: { fillColor: [240, 245, 255], textColor: [37, 99, 235], fontStyle: 'bold', fontSize: 10 } }]);
       } else if (field.type !== 'file') {
-        let value = formData[field.label] || '-';
+        let value = formData[field.id] || '-';
         if (field.type === 'date') value = formatDate(value);
 
         tableData.push([
@@ -270,7 +270,7 @@ export default function RegistrationForm() {
     }
 
     // Basic validation for files
-    const missingFiles = settings?.formFields?.filter(f => f.type === 'file' && f.required && !formData[f.label]);
+    const missingFiles = settings?.formFields?.filter(f => f.type === 'file' && f.required && !formData[f.id]);
     if (missingFiles && missingFiles.length > 0) {
       Swal.fire({
         icon: 'warning',
@@ -349,10 +349,10 @@ export default function RegistrationForm() {
       case 'textarea':
         return (
           <textarea
-            name={field.label}
+            name={field.id}
             required={field.required}
             rows={3}
-            value={formData[field.label] || ''}
+            value={formData[field.id] || ''}
             onChange={handleChange}
             className={`${commonClasses} resize-none`}
             placeholder={field.label}
@@ -361,9 +361,9 @@ export default function RegistrationForm() {
       case 'select':
         return (
           <select
-            name={field.label}
+            name={field.id}
             required={field.required}
-            value={formData[field.label] || ''}
+            value={formData[field.id] || ''}
             onChange={handleChange}
             className={`${commonClasses} bg-white`}
           >
@@ -380,13 +380,13 @@ export default function RegistrationForm() {
               type="file"
               accept="image/jpeg, image/png, application/pdf"
               required={field.required}
-              onChange={(e) => handleFileChange(e, field.label)}
+              onChange={(e) => handleFileChange(e, field.id)}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
-            {previews[field.label] ? (
+            {previews[field.id] ? (
               <div className="absolute inset-0">
-                {previews[field.label].startsWith('data:image') ? (
-                  <img src={previews[field.label]} alt="Preview" className="w-full h-full object-cover" />
+                {previews[field.id].startsWith('data:image') ? (
+                  <img src={previews[field.id]} alt="Preview" className="w-full h-full object-cover" />
                 ) : (
                   <div className="flex flex-col items-center justify-center h-full p-4 text-center bg-blue-50">
                     <FileText className="w-12 h-12 text-blue-500 mb-2" />
@@ -409,11 +409,11 @@ export default function RegistrationForm() {
         return (
           <input
             type="number"
-            name={field.label}
+            name={field.id}
             required={field.required}
             min="0"
             step="0.1"
-            value={formData[field.label] || ''}
+            value={formData[field.id] || ''}
             onChange={handleChange}
             className={commonClasses}
             placeholder={field.label}
@@ -424,31 +424,42 @@ export default function RegistrationForm() {
             }}
           />
         );
+      case 'date':
+        return (
+          <input
+            type="date"
+            name={field.id}
+            required={field.required}
+            value={formData[field.id] || ''}
+            onChange={handleChange}
+            className={commonClasses}
+          />
+        );
       default:
         return (
           <div className="relative group">
             <input
               type={field.type}
-              name={field.label}
+              name={field.id}
               required={field.required}
-              value={formData[field.label] || ''}
+              value={formData[field.id] || ''}
               onChange={handleChange}
-              className={`${commonClasses} ${(field.label === 'Nama Sekolah Asal (SD/MI)' || field.label === 'NPSN Sekolah Asal') && isFetchingSchool
+              className={`${commonClasses} ${(field.id === 'Asal Sekolah' || field.id === 'NPSN Sekolah') && isFetchingSchool
                 ? 'bg-slate-50 pr-10'
                 : ''
-                } ${field.label === 'NPSN Sekolah Asal' ? 'pr-20' : ''}`}
+                } ${field.id === 'NPSN Sekolah' ? 'pr-20' : ''}`}
               placeholder={field.label}
             />
-            {field.label === 'NPSN Sekolah Asal' && (
+            {field.id === 'NPSN Sekolah' && (
               <button
                 type="button"
-                onClick={() => handleSearchSchool(formData['NPSN Sekolah Asal'])}
+                onClick={() => handleSearchSchool(formData[field.id])}
                 className="absolute right-2 top-1/2 -translate-y-1/2 bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-1 rounded hover:bg-blue-200 transition-colors"
               >
                 Cek
               </button>
             )}
-            {(field.label === 'Nama Sekolah Asal (SD/MI)' || field.label === 'NPSN Sekolah Asal') && isFetchingSchool && (
+            {(field.id === 'Asal Sekolah' || field.id === 'NPSN Sekolah') && isFetchingSchool && (
               <div className="absolute right-12 top-1/2 -translate-y-1/2">
                 <Loader2 className="w-4 h-4 text-blue-500 animate-spin" />
               </div>
