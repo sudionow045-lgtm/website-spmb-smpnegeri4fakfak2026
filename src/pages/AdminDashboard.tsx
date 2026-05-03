@@ -224,11 +224,41 @@ export default function AdminDashboard() {
     XLSX.writeFile(wb, `Data_SPMB_${new Date().toISOString().split('T')[0]}.xlsx`);
   };
 
-  const printCard = (student: AdminData) => {
+  const printCard = async (student: AdminData) => {
     const doc = new jsPDF() as any;
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
     const margin = 15;
+
+    // Helper to fetch image and convert to base64 if it's a URL
+    const getBase64FromUrl = async (url: string): Promise<string | null> => {
+      if (!url) return null;
+      if (url.startsWith('data:')) return url;
+
+      // Handle Google Drive Links specifically for PDF generation
+      let processedUrl = url;
+      if (url.includes('drive.google.com')) {
+        const fileId = url.match(/[-\w]{25,}/);
+        if (fileId) {
+          processedUrl = `https://lh3.googleusercontent.com/d/${fileId[0]}=s500`;
+        }
+      }
+
+      try {
+        const response = await fetch(processedUrl);
+        if (!response.ok) throw new Error('Fetch failed');
+        const blob = await response.blob();
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = () => resolve(null);
+          reader.readAsDataURL(blob);
+        });
+      } catch (e) {
+        console.error("Error fetching image for PDF:", e);
+        return null;
+      }
+    };
 
     // Helper for date formatting
     const formatDateStr = (dateString: string) => {
@@ -256,7 +286,10 @@ export default function AdminDashboard() {
     // Logo if exists
     if (settings?.logoSekolah) {
       try {
-        doc.addImage(settings.logoSekolah, 'PNG', margin + 8, margin + 7, 25, 25);
+        const logoBase64 = await getBase64FromUrl(settings.logoSekolah);
+        if (logoBase64) {
+          doc.addImage(logoBase64, 'PNG', margin + 8, margin + 7, 25, 25);
+        }
       } catch (e) { }
     }
 
@@ -278,14 +311,54 @@ export default function AdminDashboard() {
     let currentY = margin + 45;
 
     // Student Photo (Top Right)
-    const photoField = settings?.formFields?.find(f => f.label.toLowerCase().includes('foto') || f.label.toLowerCase().includes('pas foto'));
-    const photoUrl = photoField ? getFieldValue(student, photoField.id) : null;
+    // Robust photo detection
+    const findPhotoUrl = () => {
+      // 1. Try by specific labels in form fields
+      const photoField = settings?.formFields?.find(f =>
+        f.type === 'file' && (
+          f.label.toLowerCase().includes('foto') ||
+          f.label.toLowerCase().includes('photo') ||
+          f.label.toLowerCase().includes('pas foto')
+        )
+      );
+      if (photoField) {
+        const url = getFieldValue(student, photoField.id);
+        if (url) return url;
+      }
+
+      // 2. Try common keys in student object
+      const commonKeys = ['Pas Foto 3x4', 'Foto', 'Pas Foto', 'Photo', 'foto', 'photo'];
+      for (const key of commonKeys) {
+        if (student[key] && typeof student[key] === 'string' && (student[key].startsWith('http') || student[key].startsWith('data:'))) {
+          return student[key];
+        }
+      }
+
+      // 3. Last resort: scan all strings for image markers
+      for (const value of Object.values(student)) {
+        if (typeof value === 'string') {
+          if (value.startsWith('data:image')) return value;
+          if (value.startsWith('http') && (value.includes('drive.google.com') || value.match(/\.(jpg|jpeg|png|webp)/i))) return value;
+        }
+      }
+      return null;
+    };
+
+    const photoUrl = findPhotoUrl();
 
     if (photoUrl) {
       try {
-        doc.setDrawColor(200, 200, 200);
-        doc.rect(pageWidth - margin - 40, currentY, 30, 40); // 3x4 ratio
-        doc.addImage(photoUrl, 'JPEG', pageWidth - margin - 39, currentY + 1, 28, 38);
+        const photoBase64 = await getBase64FromUrl(photoUrl);
+        if (photoBase64) {
+          doc.setDrawColor(200, 200, 200);
+          doc.rect(pageWidth - margin - 40, currentY, 30, 40); // 3x4 ratio
+          doc.addImage(photoBase64, 'JPEG', pageWidth - margin - 39, currentY + 1, 28, 38);
+        } else {
+          doc.setDrawColor(200, 200, 200);
+          doc.rect(pageWidth - margin - 40, currentY, 30, 40);
+          doc.setFontSize(8);
+          doc.text("FOTO", pageWidth - margin - 25, currentY + 20, { align: 'center' });
+        }
       } catch (e) {
         doc.setFontSize(8);
         doc.text("FOTO 3X4", pageWidth - margin - 25, currentY + 20, { align: 'center' });
@@ -301,12 +374,12 @@ export default function AdminDashboard() {
     // 4. Data Table
     const tableData = [
       ['No. Pendaftaran', ': ' + (student['No Pendaftaran'] || '-')],
-      ['Nama Lengkap', ': ' + (getFieldValue(student, 'Nama Lengkap') || '-')],
-      ['NISN', ': ' + (getFieldValue(student, 'NISN') || '-')],
-      ['NIK', ': ' + (getFieldValue(student, 'NIK') || '-')],
+      ['Nama Lengkap', ': ' + (getFieldValue(student, 'Nama Lengkap') || student['Nama Lengkap'] || student['Nama Lengkap (Sesuai Ijazah/Akta)'] || '-')],
+      ['NISN', ': ' + (getFieldValue(student, 'NISN') || student['NISN'] || '-')],
+      ['NIK', ': ' + (getFieldValue(student, 'NIK') || student['NIK'] || '-')],
       ['Tempat, Tgl Lahir', ': ' + (getFieldValue(student, 'Tempat Lahir') || '-') + ', ' + formatDateStr(getFieldValue(student, 'Tanggal Lahir'))],
       ['Jenis Kelamin', ': ' + (getFieldValue(student, 'Jenis Kelamin') || '-')],
-      ['Sekolah Asal', ': ' + (getFieldValue(student, 'Nama Sekolah Asal (SD/MI)') || '-')],
+      ['Sekolah Asal', ': ' + (getFieldValue(student, 'Nama Sekolah Asal (SD/MI)') || student['Nama Sekolah Asal (SD/MI)'] || '-')],
       ['Status', ': ' + (student.Status || 'Proses')]
     ];
 
@@ -333,7 +406,10 @@ export default function AdminDashboard() {
 
     if (settings?.stempelSekolah) {
       try {
-        doc.addImage(settings.stempelSekolah, 'PNG', sigX - 10, sigY + 7, 25, 25);
+        const stempelBase64 = await getBase64FromUrl(settings.stempelSekolah);
+        if (stempelBase64) {
+          doc.addImage(stempelBase64, 'PNG', sigX - 10, sigY + 7, 25, 25);
+        }
       } catch (e) { }
     }
 
