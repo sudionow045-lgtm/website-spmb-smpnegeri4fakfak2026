@@ -661,7 +661,7 @@ export default function AdminDashboard() {
                             {formatDate(settings?.tanggalCutoffUsia || '')}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            {item['Jarak ke Sekolah (km)'] ? `${item['Jarak ke Sekolah (km)']} km` : '-'}
+                            {getFieldValue(item, 'Jarak Rumah Dengan Sekolah') || item['Jarak ke Sekolah (km)'] ? `${getFieldValue(item, 'Jarak Rumah Dengan Sekolah') || item['Jarak ke Sekolah (km)']} km` : '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">
                             {getFieldValue(item, 'NIK') || '-'}
@@ -1534,7 +1534,7 @@ export default function AdminDashboard() {
                         </div>
                         <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                           <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Jarak</p>
-                          <p className="text-xs font-bold truncate">{selectedStudent['Jarak ke Sekolah (km)'] || '-'} km</p>
+                          <p className="text-xs font-bold truncate">{getFieldValue(selectedStudent, 'Jarak Rumah Dengan Sekolah') || selectedStudent['Jarak ke Sekolah (km)'] || '-'} km</p>
                         </div>
                       </div>
                     </div>
