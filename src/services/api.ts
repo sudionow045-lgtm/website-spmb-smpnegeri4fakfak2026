@@ -4,63 +4,72 @@
 const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyxtXRTmmYRvje2mYXc-y9pvOg6H9lTgUN_JTHcwHQRmhRlaNTdiVbnH9AIMCmQtaynCg/exec";
 
 // Helper function to handle fetch with better error reporting
-const safeFetch = async (url: string, options?: RequestInit) => {
-  try {
-    const response = await fetch(url, {
-      ...options,
-      // Ensure we always follow redirects (GAS requirement)
-      redirect: 'follow',
-      // Add timeout to prevent indefinite waiting
-      signal: AbortSignal.timeout(30000) // 30 seconds timeout
-    });
+// Helper function to handle fetch with better error reporting and retry mechanism
+const safeFetch = async (url: string, options?: RequestInit, retries = 2): Promise<any> => {
+  for (let i = 0; i <= retries; i++) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    try {
+      const response = await fetch(url, {
+        ...options,
+        signal: controller.signal,
+        // GAS requirement: must follow redirects
+        redirect: 'follow',
+        // Standard CORS mode
+        mode: 'cors',
+      });
 
-    const contentType = response.headers.get("content-type");
-    if (contentType && contentType.includes("application/json")) {
-      const data = await response.json();
-      // If GAS returns an error in the JSON payload
-      if (data.status === 'error') {
-        throw new Error(data.message || 'Server returned an error');
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        if (response.status === 404) throw new Error("Endpoint tidak ditemukan (404).");
+        if (response.status === 500) throw new Error("Server sedang bermasalah (500).");
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return data;
-    } else {
-      // If not JSON, it might be an HTML error page from GAS or a successful non-JSON response
-      const text = await response.text();
 
-      // If it looks like a JSON-ish string (sometimes GAS does this)
-      try {
-        const parsed = JSON.parse(text);
-        return parsed;
-      } catch (e) {
-        console.error("Non-JSON response received:", text);
-        // If it's a success message but not JSON (rare but possible in GAS)
-        if (text.toLowerCase().includes('success')) {
-          return { status: "success" };
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const data = await response.json();
+        if (data.status === 'error') {
+          throw new Error(data.message || 'Server returned an error');
         }
-
-        return {
-          status: "error",
-          message: "Server tidak memberikan respon yang valid. Silakan coba beberapa saat lagi."
-        };
+        return data;
+      } else {
+        const text = await response.text();
+        try {
+          return JSON.parse(text);
+        } catch (e) {
+          if (text.toLowerCase().includes('success')) return { status: "success" };
+          // If we get HTML, it's likely a GAS error page or login redirect
+          if (text.includes('<!DOCTYPE html>') || text.includes('<html')) {
+            throw new Error("Respon server tidak valid (HTML). Pastikan Web App GAS di-set ke 'Anyone' (Bukan 'Anyone with Google Account').");
+          }
+          throw new Error("Respon server bukan format JSON.");
+        }
       }
-    }
-  } catch (error: any) {
-    console.error("Fetch error details:", error);
+    } catch (error: any) {
+      clearTimeout(timeoutId);
+      const isLastRetry = i === retries;
 
-    let errorMessage = "Gagal menghubungi server. ";
-    if (error.name === 'TimeoutError' || error.name === 'AbortError') {
-      errorMessage = "Koneksi terputus karena server terlalu lama merespon. ";
-    } else if (error.message.includes('HTTP error')) {
-      errorMessage = "Terjadi kesalahan pada server (HTTP Error). ";
-    }
+      if (error.name === 'AbortError') {
+        if (isLastRetry) return { status: "error", message: "Koneksi terputus: Server terlalu lama merespon (Timeout 30s)." };
+        continue; // Retry
+      }
 
-    return {
-      status: "error",
-      message: errorMessage + (error.message || "Periksa koneksi internet Anda.")
-    };
+      if (error.message === 'Failed to fetch') {
+        if (isLastRetry) return {
+          status: "error",
+          message: "Gagal terhubung ke server. Pastikan Web App GAS sudah di-deploy sebagai 'Anyone' dan URL sudah benar. Periksa juga apakah ada Ad-blocker yang memblokir script.google.com."
+        };
+        // Wait a bit before retry
+        await new Promise(res => setTimeout(res, 1000));
+        continue;
+      }
+
+      if (isLastRetry) return { status: "error", message: error.message || "Terjadi kesalahan saat menghubungi server." };
+      continue;
+    }
   }
 };
 
