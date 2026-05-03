@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { checkStatus } from '../services/api';
 import { cn } from '../lib/utils';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { useSettings } from '../context/SettingsContext';
 
 export default function CheckStatus() {
@@ -109,7 +109,7 @@ export default function CheckStatus() {
     currentY += 15;
 
     // 5. Data Table (Simplified for certificate look)
-    doc.autoTable({
+    autoTable(doc, {
       startY: currentY,
       margin: { left: margin + 10, right: margin + 10 },
       body: [
@@ -124,7 +124,7 @@ export default function CheckStatus() {
       }
     });
 
-    currentY = doc.lastAutoTable.finalY + 15;
+    currentY = (doc as any).lastAutoTable.finalY + 15;
 
     // 6. Requirements
     doc.setFontSize(11);
@@ -134,7 +134,7 @@ export default function CheckStatus() {
     doc.setFont('helvetica', 'normal');
     doc.text('Peserta yang dinyatakan LULUS diharapkan segera melakukan daftar ulang pada:', margin, currentY);
     currentY += 7;
-    
+
     if (settings?.tanggalDaftarUlang) {
       const tgl = new Date(settings.tanggalDaftarUlang).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
       doc.text(`Tanggal: ${tgl}`, margin + 5, currentY);
@@ -168,13 +168,13 @@ export default function CheckStatus() {
     if (settings?.stempelSekolah) {
       try {
         doc.addImage(settings.stempelSekolah, 'PNG', sigX - 15, currentY + 8, 35, 35);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     if (settings?.tandaTanganKepalaSekolah) {
       try {
         doc.addImage(settings.tandaTanganKepalaSekolah, 'PNG', sigX, currentY + 10, 45, 20);
-      } catch (e) {}
+      } catch (e) { }
     }
 
     doc.setFont('helvetica', 'bold');
