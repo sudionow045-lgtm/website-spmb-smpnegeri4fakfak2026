@@ -159,6 +159,19 @@ export default function RegistrationForm() {
         doc.setFont("helvetica", "normal");
         doc.setTextColor(0, 0, 0);
       } else if (field.type !== 'file') {
+        const isSmallField = [
+          'Nama Lengkap (Sesuai Ijazah/Akta)',
+          'NIK / No. KITAS (Untuk WNA)',
+          'Alat Transportasi ke Sekolah',
+          'Nama Sekolah Asal (SD/MI)'
+        ].includes(field.label);
+
+        if (isSmallField) {
+          doc.setFontSize(10);
+        } else {
+          doc.setFontSize(11);
+        }
+
         doc.setFont("helvetica", "bold");
         doc.text(field.label, 20, startY);
         doc.text(":", 70, startY);
@@ -172,7 +185,7 @@ export default function RegistrationForm() {
         // Handle long text
         const splitText = doc.splitTextToSize(value, 115);
         doc.text(splitText, 75, startY);
-        startY += lineHeight * splitText.length;
+        startY += (isSmallField ? 8 : lineHeight) * splitText.length;
       }
     });
 
