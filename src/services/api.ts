@@ -1,7 +1,7 @@
 // Service to interact with Google Apps Script Backend
 
 // To use the real backend, replace this URL with your deployed Google Apps Script Web App URL
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyxtXRTmmYRvje2mYXc-y9pvOg6H9lTgUN_JTHcwHQRmhRlaNTdiVbnH9AIMCmQtaynCg/exec";
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx4wJe0lGqgLehE1G2my1A0QCuIpdl6v_2oG6e4KTGm9mjEgn12_71iRfuBpf2D6jTG0w/exec";
 
 // Helper function to handle fetch with better error reporting
 // Helper function to handle fetch with better error reporting and retry mechanism
