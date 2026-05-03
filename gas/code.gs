@@ -483,7 +483,13 @@ function handleCheckStatus(noPendaftaran) {
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
   const noRegIdx = headers.indexOf("No Pendaftaran");
-  const namaIdx = headers.indexOf("Nama Lengkap");
+  let namaIdx = headers.indexOf("Nama Lengkap");
+  
+  // Fallback if "Nama Lengkap" is not found (try the full label)
+  if (namaIdx === -1) {
+    namaIdx = headers.indexOf("Nama Lengkap (Sesuai Ijazah/Akta)");
+  }
+  
   const statusIdx = headers.indexOf("Status");
 
   for (let i = 1; i < data.length; i++) {
