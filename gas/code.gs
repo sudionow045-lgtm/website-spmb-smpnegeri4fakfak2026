@@ -486,15 +486,23 @@ function handleCheckStatus(noPendaftaran) {
   
   // Find Name column more robustly
   let namaIdx = -1;
-  const nameKeywords = ["Nama Lengkap", "Nama Peserta", "Nama Siswa"];
+  const nameKeywords = ["Nama Lengkap", "Nama Peserta", "Nama Siswa", "Nama"];
+  
+  // Strategy 1: Exact match first
   for (let k = 0; k < nameKeywords.length; k++) {
+    namaIdx = headers.indexOf(nameKeywords[k]);
+    if (namaIdx !== -1) break;
+  }
+  
+  // Strategy 2: Partial match if exact match fails
+  if (namaIdx === -1) {
     for (let h = 0; h < headers.length; h++) {
-      if (headers[h].toString().toLowerCase().includes(nameKeywords[k].toLowerCase())) {
+      const headerStr = headers[h].toString().toLowerCase();
+      if (headerStr.includes("nama lengkap") || headerStr.includes("nama peserta") || (headerStr.includes("nama") && headerStr.includes("siswa"))) {
         namaIdx = h;
         break;
       }
     }
-    if (namaIdx !== -1) break;
   }
   
   const statusIdx = headers.indexOf("Status");
@@ -505,11 +513,13 @@ function handleCheckStatus(noPendaftaran) {
   for (let i = 1; i < data.length; i++) {
     const rowNo = String(data[i][noRegIdx]).trim().toUpperCase();
     if (rowNo === searchNo) {
+      const foundName = namaIdx !== -1 ? data[i][namaIdx] : "";
+      
       return ContentService.createTextOutput(JSON.stringify({
         status: "success",
         data: {
           noPendaftaran: data[i][noRegIdx],
-          namaLengkap: (namaIdx !== -1 && data[i][namaIdx]) ? data[i][namaIdx] : "Siswa (Nama tidak ditemukan)",
+          namaLengkap: foundName || "Siswa",
           status: statusIdx !== -1 ? data[i][statusIdx] : "Proses"
         }
       })).setMimeType(ContentService.MimeType.JSON);
