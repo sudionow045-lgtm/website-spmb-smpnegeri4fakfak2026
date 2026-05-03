@@ -1,7 +1,7 @@
 // Service to interact with Google Apps Script Backend
 
 // To use the real backend, replace this URL with your deployed Google Apps Script Web App URL
-const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwxw4j0-BycwA3tb0enVei784-1u4BItk8hC66vslD6dr5umsYBev_MKtT2boL8OyijiQ/exec";
+const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyxtXRTmmYRvje2mYXc-y9pvOg6H9lTgUN_JTHcwHQRmhRlaNTdiVbnH9AIMCmQtaynCg/exec";
 
 // Helper function to handle fetch with better error reporting
 const safeFetch = async (url: string, options?: RequestInit) => {
@@ -119,13 +119,13 @@ export const getInitialMockSettings = (): AppSettings => {
     deskripsi: "Mencetak generasi penerus bangsa yang cerdas, berakhlak mulia, dan siap menghadapi tantangan masa depan dengan pendidikan berkualitas.",
     statusPendaftaran: "Buka",
     persyaratanDaftarUlang: "1. Membawa Bukti Kelulusan yang dicetak \n 2. Membawa Fotokopi SKL/IJAZAH (1 Lembar) \n 3. Membawa Fotokopi Akta Kelahiran (1 lembar) \n 4. Membawa Fotokopi Kartu Keluarga (1 lembar) \n 5. Membawa Fotokopi Sertifikat TKA (1 Lembar) \n 6. Membawa Pas Foto 3x4 (1 lembar)",
-    tanggalDaftarUlang: "2026-07-10",
+    tanggalDaftarUlang: "2024-07-15",
     tanggalPengumuman: "",
     logoSekolah: "https://iili.io/3tdgMhb.png",
     kopSurat: "https://i.imgur.com/SQXhbqP.png",
     namaKepalaSekolah: "SITI HAJIJA TEMONGMERE, S.Pd.,M.Pd",
     nipKepalaSekolah: "19750728 200008 2 001",
-    tandaTanganKepalaSekolah: "https://i.imgur.com/8Mp6PsB.jpeg",
+    tandaTanganKepalaSekolah: "",
     stempelSekolah: "https://i.imgur.com/HIJepBI.jpeg",
     tahunPendaftaran: "2026/2027",
     nomorSurat: "421.3/ /2026",
@@ -143,8 +143,8 @@ export const getInitialMockSettings = (): AppSettings => {
       { id: "header_identitas", label: "DATA IDENTITAS PESERTA DIDIK", type: "header", required: false },
       { id: "Nama Lengkap", label: "Nama Lengkap (Sesuai Ijazah/Akta)", type: "text", required: true },
       { id: "Jenis Kelamin", label: "Jenis Kelamin", type: "select", options: ["Laki-laki", "Perempuan"], required: true },
-      { id: "NISN", label: "NISN", type: "number", required: true },
-      { id: "NIK", label: "NIK / No. KITAS (Untuk WNA)", type: "number", required: true },
+      { id: "NISN", label: "NISN (Wajib 10 Digit)", type: "number", required: true },
+      { id: "NIK", label: "NIK (Wajib 16 Digit)", type: "number", required: true },
       { id: "Tempat Lahir", label: "Tempat Lahir", type: "text", required: true },
       { id: "Tanggal Lahir", label: "Tanggal Lahir", type: "date", required: true },
       { id: "Agama", label: "Agama & Kepercayaan", type: "select", options: ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Khonghucu", "Lainnya"], required: true },
@@ -161,7 +161,7 @@ export const getInitialMockSettings = (): AppSettings => {
       { id: "Alat Transportasi", label: "Alat Transportasi ke Sekolah", type: "select", options: ["Jalan kaki", "Kendaraan pribadi", "Kendaraan umum", "Jemputan sekolah", "Kereta api", "Ojek", "Andong/Bendi/Sado/Kuda", "Perahu penyeberangan", "Lainnya"], required: true },
 
       { id: "header_sekolah", label: "DATA SEKOLAH ASAL", type: "header", required: false },
-      { id: "NPSN Sekolah", label: "NPSN Sekolah Asal", type: "number", required: true },
+      { id: "NPSN Sekolah", label: "NPSN Sekolah Asal (Wajib 8 Digit)", type: "number", required: true },
       { id: "Asal Sekolah", label: "Nama Sekolah Asal (SD/MI)", type: "text", required: true },
 
       { id: "header_ortu", label: "DATA ORANG TUA / WALI", type: "header", required: false },
