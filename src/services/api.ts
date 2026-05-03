@@ -9,27 +9,57 @@ const safeFetch = async (url: string, options?: RequestInit) => {
     const response = await fetch(url, {
       ...options,
       // Ensure we always follow redirects (GAS requirement)
-      redirect: 'follow'
+      redirect: 'follow',
+      // Add timeout to prevent indefinite waiting
+      signal: AbortSignal.timeout(30000) // 30 seconds timeout
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
-      return await response.json();
+      const data = await response.json();
+      // If GAS returns an error in the JSON payload
+      if (data.status === 'error') {
+        throw new Error(data.message || 'Server returned an error');
+      }
+      return data;
     } else {
-      // If not JSON, it might be an HTML error page from GAS
+      // If not JSON, it might be an HTML error page from GAS or a successful non-JSON response
       const text = await response.text();
-      console.error("Non-JSON response received:", text);
-      return {
-        status: "error",
-        message: "Server tidak memberikan respon JSON yang valid. Pastikan Web App sudah di-deploy dengan benar."
-      };
+
+      // If it looks like a JSON-ish string (sometimes GAS does this)
+      try {
+        const parsed = JSON.parse(text);
+        return parsed;
+      } catch (e) {
+        console.error("Non-JSON response received:", text);
+        // If it's a success message but not JSON (rare but possible in GAS)
+        if (text.toLowerCase().includes('success')) {
+          return { status: "success" };
+        }
+
+        return {
+          status: "error",
+          message: "Server tidak memberikan respon yang valid. Silakan coba beberapa saat lagi."
+        };
+      }
     }
   } catch (error: any) {
-    console.error("Fetch error:", error);
-    // Return a structured error instead of throwing
+    console.error("Fetch error details:", error);
+
+    let errorMessage = "Gagal menghubungi server. ";
+    if (error.name === 'TimeoutError' || error.name === 'AbortError') {
+      errorMessage = "Koneksi terputus karena server terlalu lama merespon. ";
+    } else if (error.message.includes('HTTP error')) {
+      errorMessage = "Terjadi kesalahan pada server (HTTP Error). ";
+    }
+
     return {
       status: "error",
-      message: error.message || "Gagal menghubungi server. Periksa koneksi internet Anda."
+      message: errorMessage + (error.message || "Periksa koneksi internet Anda.")
     };
   }
 };
@@ -369,9 +399,22 @@ export const submitRegistration = async (data: RegistrationData) => {
     return { status: 'success', noPendaftaran };
   }
 
+  // Pre-process data to ensure all values are strings or numbers (avoid complex objects)
+  const processedData = Object.keys(data).reduce((acc: any, key) => {
+    const val = data[key];
+    if (val === null || val === undefined) {
+      acc[key] = "";
+    } else if (typeof val === 'object' && !(val instanceof Date)) {
+      acc[key] = JSON.stringify(val);
+    } else {
+      acc[key] = val;
+    }
+    return acc;
+  }, {});
+
   return await safeFetch(GAS_WEB_APP_URL, {
     method: "POST",
-    body: JSON.stringify(data),
+    body: JSON.stringify(processedData),
     headers: { "Content-Type": "text/plain;charset=utf-8" },
   });
 };
