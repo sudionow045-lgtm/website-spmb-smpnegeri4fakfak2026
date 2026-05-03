@@ -181,9 +181,19 @@ export default function CheckStatus() {
 
     if (settings?.tandaTanganKepalaSekolah) {
       try {
+        // Set transparency for signature to blend with stamp
+        const gState = new (doc as any).GState({ opacity: 0.8 });
+        doc.setGState(gState);
+
         // Position signature centered
         doc.addImage(settings.tandaTanganKepalaSekolah, 'PNG', sigCenterX - 20, currentY + 8, 40, 20);
-      } catch (e) { }
+
+        // Reset transparency
+        doc.setGState(new (doc as any).GState({ opacity: 1.0 }));
+      } catch (e) {
+        // Fallback if GState is not supported
+        doc.addImage(settings.tandaTanganKepalaSekolah, 'PNG', sigCenterX - 20, currentY + 8, 40, 20);
+      }
     }
 
     doc.setFont('helvetica', 'bold');
