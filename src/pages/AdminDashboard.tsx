@@ -276,7 +276,8 @@ export default function AdminDashboard() {
       if (url.includes('drive.google.com')) {
         const fileId = url.match(/[-\w]{25,}/);
         if (fileId) {
-          processedUrl = `https://lh3.googleusercontent.com/d/${fileId[0]}=s500`;
+          // Use =s0 for original resolution (no blur)
+          processedUrl = `https://lh3.googleusercontent.com/d/${fileId[0]}=s0`;
         }
       }
 
@@ -1487,8 +1488,8 @@ export default function AdminDashboard() {
                                 alt="Profile"
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 style={{
-                                  imageRendering: 'crisp-edges',
-                                  filter: 'brightness(1.02) contrast(1.05)'
+                                  imageRendering: 'auto',
+                                  filter: 'brightness(1.08) contrast(1.12) saturate(1.1)'
                                 }}
                               />
                               <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -1701,7 +1702,7 @@ export default function AdminDashboard() {
                   className="max-h-[80vh] w-auto object-contain"
                   style={{
                     imageRendering: 'auto',
-                    filter: 'brightness(1.02) contrast(1.05) saturate(1.1)'
+                    filter: 'brightness(1.08) contrast(1.12) saturate(1.1)'
                   }}
                 />
               </div>
