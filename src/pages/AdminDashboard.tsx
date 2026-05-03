@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Filter, Download, Printer, CheckCircle, XCircle, Clock, FileText, Moon, Sun, Loader2, LogOut, Eye, X, Settings, LayoutDashboard, RefreshCw, User, MapPin, Users, Info, Calendar, ExternalLink } from 'lucide-react';
+import { Search, Filter, Download, Printer, CheckCircle, XCircle, Clock, FileText, Moon, Sun, Loader2, LogOut, Eye, X, Settings, LayoutDashboard, RefreshCw, User, MapPin, Users, Info, Calendar, ExternalLink, Maximize2 } from 'lucide-react';
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -60,6 +60,7 @@ export default function AdminDashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<AdminData | null>(null);
+  const [showPhotoModal, setShowPhotoModal] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'settings'>('dashboard');
   const [settingsTab, setSettingsTab] = useState<'school' | 'form' | 'surat' | 'daftar-ulang' | 'kepala-sekolah' | 'panduan'>('school');
   const itemsPerPage = 10;
@@ -75,6 +76,41 @@ export default function AdminDashboard() {
       return item[field.label];
     }
     return item[fieldId];
+  };
+
+  const getStudentPhoto = (student: any) => {
+    if (!student) return null;
+
+    // 1. Try by specific labels in form fields
+    const photoField = settings?.formFields?.find(f =>
+      f.type === 'file' && (
+        f.label.toLowerCase().includes('foto') ||
+        f.label.toLowerCase().includes('photo') ||
+        f.label.toLowerCase().includes('pas foto') ||
+        f.label.toLowerCase().includes('profil')
+      )
+    );
+    if (photoField) {
+      const url = getFieldValue(student, photoField.id);
+      if (url) return url;
+    }
+
+    // 2. Try common keys in student object
+    const commonKeys = ['Pas Foto 3x4', 'Foto', 'Pas Foto', 'Photo', 'foto', 'photo', 'Profile', 'profile'];
+    for (const key of commonKeys) {
+      if (student[key] && typeof student[key] === 'string' && (student[key].startsWith('http') || student[key].startsWith('data:'))) {
+        return student[key];
+      }
+    }
+
+    // 3. Last resort: scan all strings for image markers
+    for (const value of Object.values(student)) {
+      if (typeof value === 'string') {
+        if (value.startsWith('data:image')) return value;
+        if (value.startsWith('http') && (value.includes('drive.google.com') || value.match(/\.(jpg|jpeg|png|webp)/i))) return value;
+      }
+    }
+    return null;
   };
 
   useEffect(() => {
@@ -311,40 +347,7 @@ export default function AdminDashboard() {
     let currentY = margin + 45;
 
     // Student Photo (Top Right)
-    // Robust photo detection
-    const findPhotoUrl = () => {
-      // 1. Try by specific labels in form fields
-      const photoField = settings?.formFields?.find(f =>
-        f.type === 'file' && (
-          f.label.toLowerCase().includes('foto') ||
-          f.label.toLowerCase().includes('photo') ||
-          f.label.toLowerCase().includes('pas foto')
-        )
-      );
-      if (photoField) {
-        const url = getFieldValue(student, photoField.id);
-        if (url) return url;
-      }
-
-      // 2. Try common keys in student object
-      const commonKeys = ['Pas Foto 3x4', 'Foto', 'Pas Foto', 'Photo', 'foto', 'photo'];
-      for (const key of commonKeys) {
-        if (student[key] && typeof student[key] === 'string' && (student[key].startsWith('http') || student[key].startsWith('data:'))) {
-          return student[key];
-        }
-      }
-
-      // 3. Last resort: scan all strings for image markers
-      for (const value of Object.values(student)) {
-        if (typeof value === 'string') {
-          if (value.startsWith('data:image')) return value;
-          if (value.startsWith('http') && (value.includes('drive.google.com') || value.match(/\.(jpg|jpeg|png|webp)/i))) return value;
-        }
-      }
-      return null;
-    };
-
-    const photoUrl = findPhotoUrl();
+    const photoUrl = getStudentPhoto(student);
 
     if (photoUrl) {
       try {
@@ -1465,15 +1468,28 @@ export default function AdminDashboard() {
                   <div className="lg:col-span-1 space-y-6">
                     {/* Profile Summary Card */}
                     <div className={cn("p-6 rounded-2xl border text-center", isDarkMode ? "bg-slate-900/50 border-slate-700" : "bg-slate-50 border-slate-100")}>
-                      <div className="w-24 h-32 mx-auto mb-4 bg-slate-200 dark:bg-slate-700 rounded-xl overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm">
+                      <div
+                        onClick={() => {
+                          const url = getStudentPhoto(selectedStudent);
+                          if (url) setShowPhotoModal(url);
+                        }}
+                        className={cn(
+                          "w-28 h-36 mx-auto mb-4 bg-slate-200 dark:bg-slate-700 rounded-xl overflow-hidden border-2 border-white dark:border-slate-800 shadow-md group relative",
+                          getStudentPhoto(selectedStudent) ? "cursor-zoom-in" : ""
+                        )}
+                      >
                         {(() => {
-                          const photoField = settings?.formFields?.find(f => f.label.toLowerCase().includes('foto') || f.label.toLowerCase().includes('pas foto'));
-                          const photoUrl = photoField ? getFieldValue(selectedStudent, photoField.id) : null;
+                          const photoUrl = getStudentPhoto(selectedStudent);
                           return photoUrl ? (
-                            <img src={photoUrl} alt="Profile" className="w-full h-full object-cover" />
+                            <>
+                              <img src={photoUrl} alt="Profile" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <Maximize2 size={20} className="text-white" />
+                              </div>
+                            </>
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-slate-400">
-                              <User size={40} />
+                              <User size={48} />
                             </div>
                           );
                         })()}
@@ -1649,6 +1665,37 @@ export default function AdminDashboard() {
                   Tutup
                 </button>
               </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Photo Preview Modal */}
+      <AnimatePresence>
+        {showPhotoModal && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className="relative max-w-4xl w-full flex flex-col items-center"
+            >
+              <button
+                onClick={() => setShowPhotoModal(null)}
+                className="absolute -top-12 right-0 p-2 text-white hover:text-blue-400 transition-colors bg-white/10 rounded-full"
+              >
+                <X size={32} />
+              </button>
+              <div className="bg-white p-1 rounded-2xl shadow-2xl overflow-hidden">
+                <img
+                  src={showPhotoModal}
+                  alt="Full Profile"
+                  className="max-h-[80vh] w-auto object-contain"
+                />
+              </div>
+              <p className="mt-4 text-white font-medium bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">
+                Foto Profil Pendaftar
+              </p>
             </motion.div>
           </div>
         )}
