@@ -359,11 +359,12 @@ export default function RegistrationForm() {
       } else {
         throw new Error(response.message || 'Terjadi kesalahan');
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Submit error details:", error);
       Swal.fire({
         icon: 'error',
-        title: 'Oops...',
-        text: 'Terjadi kesalahan saat mengirim data. Silakan coba lagi.',
+        title: 'Gagal Mengirim Data',
+        text: error.message || 'Terjadi kesalahan saat mengirim data. Silakan periksa koneksi internet Anda dan coba lagi.',
         confirmButtonColor: '#3b82f6'
       });
     } finally {
