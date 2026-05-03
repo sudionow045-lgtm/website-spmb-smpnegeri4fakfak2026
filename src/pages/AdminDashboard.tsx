@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, Filter, Download, Printer, CheckCircle, XCircle, Clock, FileText, Moon, Sun, Loader2, LogOut, Eye, X, Settings, LayoutDashboard, RefreshCw } from 'lucide-react';
+import { Search, Filter, Download, Printer, CheckCircle, XCircle, Clock, FileText, Moon, Sun, Loader2, LogOut, Eye, X, Settings, LayoutDashboard, RefreshCw, User, MapPin, Users, Info, Calendar, ExternalLink } from 'lucide-react';
 import Swal from 'sweetalert2';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -1289,141 +1289,223 @@ export default function AdminDashboard() {
       {/* Detail Modal */}
       <AnimatePresence>
         {selectedStudent && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className={cn("w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl", isDarkMode ? "bg-slate-800 text-white" : "bg-white text-slate-900")}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className={cn("w-full max-w-5xl max-h-[90vh] overflow-hidden rounded-2xl shadow-2xl flex flex-col", isDarkMode ? "bg-slate-800 text-white" : "bg-white text-slate-900")}
             >
-              <div className={cn("sticky top-0 z-10 flex items-center justify-between px-6 py-4 border-b", isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-200")}>
-                <h2 className="text-xl font-bold">Detail Pendaftar</h2>
-                <button onClick={() => setSelectedStudent(null)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
-                  <X size={20} />
-                </button>
-              </div>
-
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {/* Data Section */}
-                  <div className="space-y-6">
-                    <div>
-                      <h3 className="text-lg font-semibold border-b pb-2 mb-4 dark:border-slate-700">Data Pendaftar</h3>
-                      <dl className="grid grid-cols-1 gap-y-3 text-sm">
-                        <div className="grid grid-cols-3 gap-4">
-                          <dt className="text-slate-500 dark:text-slate-400">No. Pendaftaran</dt>
-                          <dd className="col-span-2 font-medium">{selectedStudent['No Pendaftaran']}</dd>
-                        </div>
-                        <div className="grid grid-cols-3 gap-4">
-                          <dt className="text-slate-500 dark:text-slate-400">Status</dt>
-                          <dd className="col-span-2">{getStatusBadge(selectedStudent.Status)}</dd>
-                        </div>
-                        <div className="grid grid-cols-3 gap-4">
-                          <dt className="text-slate-500 dark:text-slate-400">Waktu Daftar</dt>
-                          <dd className="col-span-2 font-medium">{new Date(selectedStudent.Timestamp).toLocaleString()}</dd>
-                        </div>
-
-                        {/* Dynamic Fields */}
-                        {(settings?.formFields || []).filter(f => f.type !== 'file').map(field => {
-                          if (field.type === 'header') {
-                            return (
-                              <div key={field.id} className="col-span-3 pt-4 border-b border-slate-100 dark:border-slate-700 pb-1 mb-2">
-                                <h4 className="font-bold text-blue-600 dark:text-blue-400 text-sm uppercase">{field.label}</h4>
-                              </div>
-                            );
-                          }
-                          const value = getFieldValue(selectedStudent, field.id);
-                          return (
-                            <React.Fragment key={field.id}>
-                              <div className="grid grid-cols-3 gap-4">
-                                <dt className="text-slate-500 dark:text-slate-400">{field.label}</dt>
-                                <dd className="col-span-2 font-medium">
-                                  {field.id === 'Tanggal Lahir'
-                                    ? formatDate(value)
-                                    : (value || '-')}
-                                </dd>
-                              </div>
-                              {field.id === 'Tanggal Lahir' && (
-                                <>
-                                  <div className="grid grid-cols-3 gap-4">
-                                    <dt className="text-slate-500 dark:text-slate-400">Usia</dt>
-                                    <dd className="col-span-2 font-medium">{calculateAge(value, settings?.tanggalCutoffUsia)}</dd>
-                                  </div>
-                                  <div className="grid grid-cols-3 gap-4">
-                                    <dt className="text-slate-500 dark:text-slate-400">Batas Hitung Usia</dt>
-                                    <dd className="col-span-2 font-medium">{formatDate(settings?.tanggalCutoffUsia || '')}</dd>
-                                  </div>
-                                </>
-                              )}
-                            </React.Fragment>
-                          )
-                        })}
-
-                        {selectedStudent['Koordinat Lokasi'] && (
-                          <div className="grid grid-cols-3 gap-4 mt-2">
-                            <dt className="text-slate-500 dark:text-slate-400">Koordinat Lokasi</dt>
-                            <dd className="col-span-2 font-medium">
-                              <a
-                                href={`https://www.google.com/maps/search/?api=1&query=${selectedStudent['Koordinat Lokasi']}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:underline flex items-center gap-1"
-                              >
-                                {selectedStudent['Koordinat Lokasi']}
-                              </a>
-                            </dd>
-                          </div>
-                        )}
-
-                        {selectedStudent['Jarak ke Sekolah (km)'] && (
-                          <div className="grid grid-cols-3 gap-4">
-                            <dt className="text-slate-500 dark:text-slate-400">Jarak ke Sekolah</dt>
-                            <dd className="col-span-2 font-medium text-blue-700">{selectedStudent['Jarak ke Sekolah (km)']} km</dd>
-                          </div>
-                        )}
-                      </dl>
-                    </div>
-
-                    <div className="pt-4 flex gap-3">
-                      {selectedStudent.Status !== 'Lulus' && (
-                        <button onClick={() => handleUpdateStatus(selectedStudent['No Pendaftaran'], 'Lulus')} className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg font-medium transition-colors">
-                          Ubah ke Lulus
-                        </button>
-                      )}
-                      {selectedStudent.Status !== 'Tidak Lulus' && (
-                        <button onClick={() => handleUpdateStatus(selectedStudent['No Pendaftaran'], 'Tidak Lulus')} className="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-medium transition-colors">
-                          Ubah ke Tidak Lulus
-                        </button>
-                      )}
-                    </div>
+              {/* Modal Header */}
+              <div className={cn("flex items-center justify-between px-8 py-5 border-b shrink-0", isDarkMode ? "bg-slate-800 border-slate-700" : "bg-white border-slate-100")}>
+                <div className="flex items-center gap-3">
+                  <div className="bg-blue-100 dark:bg-blue-900/40 p-2.5 rounded-xl text-blue-600 dark:text-blue-400">
+                    <User size={24} />
                   </div>
-
-                  {/* Files Section */}
                   <div>
-                    <h3 className="text-lg font-semibold border-b pb-2 mb-4 dark:border-slate-700">Berkas Upload</h3>
-                    <div className="space-y-4">
-                      {(settings?.formFields || []).filter(f => f.type === 'file').map(field => {
-                        const fileUrl = getFieldValue(selectedStudent, field.id);
-                        return (
-                          <div key={field.id} className={cn("p-4 rounded-xl border", isDarkMode ? "border-slate-700 bg-slate-900" : "border-slate-200 bg-slate-50")}>
-                            <p className="text-sm font-medium mb-2">{field.label}</p>
-                            {fileUrl ? (
-                              fileUrl.startsWith('data:image') ? (
-                                <img src={fileUrl} alt={field.label} className="w-full h-32 object-cover rounded-lg border" />
-                              ) : (
-                                <a href={fileUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:underline text-sm flex items-center gap-2">
-                                  <FileText size={16} /> Buka {field.label}
-                                </a>
-                              )
-                            ) : (
-                              <span className="text-sm text-slate-500">Tidak ada file</span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <h2 className="text-xl font-bold">Detail Pendaftar</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">No. Pendaftaran: {selectedStudent['No Pendaftaran']}</p>
                   </div>
                 </div>
+                <div className="flex items-center gap-3">
+                  {getStatusBadge(selectedStudent.Status)}
+                  <button onClick={() => setSelectedStudent(null)} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                    <X size={22} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Modal Body */}
+              <div className="flex-grow overflow-y-auto p-8 custom-scrollbar">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                  {/* Left Column: Personal Summary & Stats */}
+                  <div className="lg:col-span-1 space-y-6">
+                    {/* Profile Summary Card */}
+                    <div className={cn("p-6 rounded-2xl border text-center", isDarkMode ? "bg-slate-900/50 border-slate-700" : "bg-slate-50 border-slate-100")}>
+                      <div className="w-24 h-32 mx-auto mb-4 bg-slate-200 dark:bg-slate-700 rounded-xl overflow-hidden border-2 border-white dark:border-slate-800 shadow-sm">
+                        {(() => {
+                          const photoField = settings?.formFields?.find(f => f.label.toLowerCase().includes('foto') || f.label.toLowerCase().includes('pas foto'));
+                          const photoUrl = photoField ? getFieldValue(selectedStudent, photoField.id) : null;
+                          return photoUrl ? (
+                            <img src={photoUrl} alt="Profile" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-400">
+                              <User size={40} />
+                            </div>
+                          );
+                        })()}
+                      </div>
+                      <h3 className="font-bold text-lg leading-tight mb-1">{getFieldValue(selectedStudent, 'Nama Lengkap') || 'Nama Tidak Tersedia'}</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">{getFieldValue(selectedStudent, 'NISN') || 'NISN: -'}</p>
+
+                      <div className="grid grid-cols-2 gap-2 text-left">
+                        <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                          <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Usia</p>
+                          <p className="text-xs font-bold truncate">{calculateAge(getFieldValue(selectedStudent, 'Tanggal Lahir'), settings?.tanggalCutoffUsia).split(' ')[0]} Thn</p>
+                        </div>
+                        <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+                          <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Jarak</p>
+                          <p className="text-xs font-bold truncate">{selectedStudent['Jarak ke Sekolah (km)'] || '-'} km</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="space-y-3">
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Tindakan Cepat</p>
+                      <div className="grid grid-cols-1 gap-2">
+                        {selectedStudent.Status !== 'Lulus' && (
+                          <button
+                            onClick={() => handleUpdateStatus(selectedStudent['No Pendaftaran'], 'Lulus')}
+                            className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white py-2.5 rounded-xl font-bold transition-all shadow-sm hover:shadow-md"
+                          >
+                            <CheckCircle size={18} /> Luluskan
+                          </button>
+                        )}
+                        {selectedStudent.Status !== 'Tidak Lulus' && (
+                          <button
+                            onClick={() => handleUpdateStatus(selectedStudent['No Pendaftaran'], 'Tidak Lulus')}
+                            className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white py-2.5 rounded-xl font-bold transition-all shadow-sm hover:shadow-md"
+                          >
+                            <XCircle size={18} /> Tolak Pendaftar
+                          </button>
+                        )}
+                        <button
+                          onClick={() => printCard(selectedStudent)}
+                          className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white py-2.5 rounded-xl font-bold transition-all shadow-sm hover:shadow-md"
+                        >
+                          <Printer size={18} /> Cetak Kartu
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Metadata */}
+                    <div className={cn("p-4 rounded-xl border space-y-3", isDarkMode ? "bg-slate-900/30 border-slate-700" : "bg-slate-50/50 border-slate-100")}>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-500">Waktu Pendaftaran</span>
+                        <span className="font-bold">{new Date(selectedStudent.Timestamp).toLocaleString('id-ID')}</span>
+                      </div>
+                      {selectedStudent['Koordinat Lokasi'] && (
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-slate-500">Lokasi Rumah</span>
+                          <a
+                            href={`https://www.google.com/maps/search/?api=1&query=${selectedStudent['Koordinat Lokasi']}`}
+                            target="_blank" rel="noopener noreferrer"
+                            className="text-blue-600 font-bold flex items-center gap-1 hover:underline"
+                          >
+                            Buka Maps <ExternalLink size={12} />
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Right Column: Detailed Information */}
+                  <div className="lg:col-span-2 space-y-8">
+                    {/* Information Sections */}
+                    {(() => {
+                      const sections: { title: string, icon: any, fields: any[] }[] = [];
+                      let currentSection: { title: string, icon: any, fields: any[] } | null = null;
+
+                      (settings?.formFields || []).forEach(field => {
+                        if (field.type === 'header') {
+                          let icon = <Info size={18} />;
+                          if (field.label.toLowerCase().includes('identitas')) icon = <User size={18} />;
+                          if (field.label.toLowerCase().includes('alamat')) icon = <MapPin size={18} />;
+                          if (field.label.toLowerCase().includes('sekolah')) icon = <LayoutDashboard size={18} />;
+                          if (field.label.toLowerCase().includes('orang tua')) icon = <Users size={18} />;
+                          if (field.label.toLowerCase().includes('periodik')) icon = <Calendar size={18} />;
+                          if (field.label.toLowerCase().includes('berkas')) icon = <FileText size={18} />;
+
+                          currentSection = { title: field.label, icon, fields: [] };
+                          sections.push(currentSection);
+                        } else if (currentSection) {
+                          currentSection.fields.push(field);
+                        }
+                      });
+
+                      return (
+                        <div className="space-y-8">
+                          {sections.map((section, sIdx) => (
+                            <div key={sIdx} className="space-y-4">
+                              <div className="flex items-center gap-2 border-b-2 border-blue-500/20 pb-2">
+                                <div className="text-blue-600 dark:text-blue-400">{section.icon}</div>
+                                <h3 className="font-bold text-blue-800 dark:text-blue-300 uppercase tracking-wide text-sm">{section.title}</h3>
+                              </div>
+
+                              {section.title.toLowerCase().includes('berkas') ? (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                  {section.fields.filter(f => f.type === 'file').map(field => {
+                                    const fileUrl = getFieldValue(selectedStudent, field.id);
+                                    return (
+                                      <div key={field.id} className={cn("group relative p-3 rounded-xl border transition-all", isDarkMode ? "bg-slate-900 border-slate-700 hover:border-blue-500" : "bg-white border-slate-100 hover:border-blue-300 shadow-sm")}>
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">{field.label}</p>
+                                        {fileUrl ? (
+                                          fileUrl.startsWith('data:image') ? (
+                                            <div className="relative aspect-video rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+                                              <img src={fileUrl} alt={field.label} className="w-full h-full object-cover" />
+                                              <a
+                                                href={fileUrl} download={`Berkas_${field.label}_${selectedStudent['No Pendaftaran']}`}
+                                                className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                                              >
+                                                <button className="bg-white text-slate-900 px-3 py-1.5 rounded-lg text-xs font-bold shadow-lg flex items-center gap-1.5">
+                                                  <Eye size={14} /> Lihat / Unduh
+                                                </button>
+                                              </a>
+                                            </div>
+                                          ) : (
+                                            <a href={fileUrl} target="_blank" rel="noreferrer" className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800/50 group/link">
+                                              <div className="flex items-center gap-2">
+                                                <FileText size={20} />
+                                                <span className="text-xs font-bold">Buka Dokumen</span>
+                                              </div>
+                                              <ExternalLink size={14} className="group-hover/link:translate-x-0.5 transition-transform" />
+                                            </a>
+                                          )
+                                        ) : (
+                                          <div className="flex items-center gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/50 text-slate-400 italic">
+                                            <X size={16} />
+                                            <span className="text-xs">Tidak ada file</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              ) : (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4 px-2">
+                                  {section.fields.map(field => {
+                                    const value = getFieldValue(selectedStudent, field.id);
+                                    return (
+                                      <div key={field.id} className="space-y-1">
+                                        <dt className="text-[10px] uppercase font-bold text-slate-400 tracking-tight">{field.label}</dt>
+                                        <dd className={cn("text-sm font-medium", !value && "text-slate-400 italic")}>
+                                          {field.type === 'date' ? formatDate(value) : (value || '-')}
+                                        </dd>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className={cn("px-8 py-4 border-t shrink-0 flex justify-end items-center gap-4", isDarkMode ? "bg-slate-800 border-slate-700" : "bg-slate-50 border-slate-100")}>
+                <p className="text-[10px] text-slate-400 italic mr-auto">Informasi ini bersifat rahasia dan hanya untuk keperluan pendaftaran SPMB.</p>
+                <button
+                  onClick={() => setSelectedStudent(null)}
+                  className={cn("px-6 py-2 rounded-xl text-sm font-bold transition-all", isDarkMode ? "bg-slate-700 text-white hover:bg-slate-600" : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-sm")}
+                >
+                  Tutup
+                </button>
               </div>
             </motion.div>
           </div>
