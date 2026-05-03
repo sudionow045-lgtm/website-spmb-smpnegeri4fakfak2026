@@ -78,8 +78,21 @@ export default function AdminDashboard() {
     return item[fieldId];
   };
 
+  const transformDriveUrl = (url: string) => {
+    if (!url || typeof url !== 'string') return url;
+    if (url.includes('drive.google.com')) {
+      const fileId = url.match(/[-\w]{25,}/);
+      if (fileId) {
+        return `https://lh3.googleusercontent.com/d/${fileId[0]}=s0`;
+      }
+    }
+    return url;
+  };
+
   const getStudentPhoto = (student: any) => {
     if (!student) return null;
+
+    let rawUrl = null;
 
     // 1. Try by specific labels in form fields
     const photoField = settings?.formFields?.find(f =>
@@ -91,26 +104,37 @@ export default function AdminDashboard() {
       )
     );
     if (photoField) {
-      const url = getFieldValue(student, photoField.id);
-      if (url) return url;
+      rawUrl = getFieldValue(student, photoField.id);
     }
 
-    // 2. Try common keys in student object
-    const commonKeys = ['Pas Foto 3x4', 'Foto', 'Pas Foto', 'Photo', 'foto', 'photo', 'Profile', 'profile'];
-    for (const key of commonKeys) {
-      if (student[key] && typeof student[key] === 'string' && (student[key].startsWith('http') || student[key].startsWith('data:'))) {
-        return student[key];
+    // 2. Try common keys in student object if not found
+    if (!rawUrl) {
+      const commonKeys = ['Pas Foto 3x4', 'Foto', 'Pas Foto', 'Photo', 'foto', 'photo', 'Profile', 'profile'];
+      for (const key of commonKeys) {
+        if (student[key] && typeof student[key] === 'string' && (student[key].startsWith('http') || student[key].startsWith('data:'))) {
+          rawUrl = student[key];
+          break;
+        }
       }
     }
 
     // 3. Last resort: scan all strings for image markers
-    for (const value of Object.values(student)) {
-      if (typeof value === 'string') {
-        if (value.startsWith('data:image')) return value;
-        if (value.startsWith('http') && (value.includes('drive.google.com') || value.match(/\.(jpg|jpeg|png|webp)/i))) return value;
+    if (!rawUrl) {
+      for (const value of Object.values(student)) {
+        if (typeof value === 'string') {
+          if (value.startsWith('data:image')) {
+            rawUrl = value;
+            break;
+          }
+          if (value.startsWith('http') && (value.includes('drive.google.com') || value.match(/\.(jpg|jpeg|png|webp)/i))) {
+            rawUrl = value;
+            break;
+          }
+        }
       }
     }
-    return null;
+
+    return transformDriveUrl(rawUrl);
   };
 
   useEffect(() => {
@@ -271,15 +295,8 @@ export default function AdminDashboard() {
       if (!url) return null;
       if (url.startsWith('data:')) return url;
 
-      // Handle Google Drive Links specifically for PDF generation
-      let processedUrl = url;
-      if (url.includes('drive.google.com')) {
-        const fileId = url.match(/[-\w]{25,}/);
-        if (fileId) {
-          // Use =s0 for original resolution (no blur)
-          processedUrl = `https://lh3.googleusercontent.com/d/${fileId[0]}=s0`;
-        }
-      }
+      // Use the global transform helper
+      const processedUrl = transformDriveUrl(url);
 
       try {
         const response = await fetch(processedUrl);
@@ -1487,6 +1504,10 @@ export default function AdminDashboard() {
                                 src={photoUrl}
                                 alt="Profile"
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                onError={(e) => {
+                                  // Fallback if image fails to load
+                                  e.currentTarget.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(getFieldValue(selectedStudent, 'Nama Lengkap') || 'Siswa') + '&background=random&size=200';
+                                }}
                                 style={{
                                   imageRendering: 'auto',
                                   filter: 'brightness(1.08) contrast(1.12) saturate(1.1)'
