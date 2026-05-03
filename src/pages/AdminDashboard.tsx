@@ -408,7 +408,17 @@ export default function AdminDashboard() {
       try {
         const stempelBase64 = await getBase64FromUrl(settings.stempelSekolah);
         if (stempelBase64) {
+          // Add stamp with slight transparency
+          try {
+            const gState = new (doc as any).GState({ opacity: 0.9 });
+            doc.setGState(gState);
+          } catch (e) { }
+          
           doc.addImage(stempelBase64, 'PNG', sigX - 10, sigY + 7, 25, 25);
+          
+          try {
+            doc.setGState(new (doc as any).GState({ opacity: 1.0 }));
+          } catch (e) { }
         }
       } catch (e) { }
     }
