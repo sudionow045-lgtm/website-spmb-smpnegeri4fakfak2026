@@ -17,8 +17,8 @@ const DEFAULT_FORM_FIELDS = [
   { id: "header_identitas", label: "DATA IDENTITAS PESERTA DIDIK", type: "header" },
   { id: "Nama Lengkap", label: "Nama Lengkap (Sesuai Ijazah/Akta)", type: "text", required: true },
   { id: "Jenis Kelamin", label: "Jenis Kelamin", type: "select", options: ["Laki-laki", "Perempuan"], required: true },
-  { id: "NISN", label: "NISN", type: "number", required: true },
-  { id: "NIK", label: "NIK / No. KITAS (Untuk WNA)", type: "number", required: true },
+  { id: "NISN", label: "NISN (Wajib 10 Digit)", type: "number", required: true },
+  { id: "NIK", label: "NIK (Wajib 16 Digit)", type: "number", required: true },
   { id: "Tempat Lahir", label: "Tempat Lahir", type: "text", required: true },
   { id: "Tanggal Lahir", label: "Tanggal Lahir", type: "date", required: true },
   { id: "Agama", label: "Agama & Kepercayaan", type: "select", options: ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Khonghucu", "Lainnya"], required: true },
@@ -35,7 +35,7 @@ const DEFAULT_FORM_FIELDS = [
   { id: "Alat Transportasi", label: "Alat Transportasi ke Sekolah", type: "select", options: ["Jalan kaki", "Kendaraan pribadi", "Kendaraan umum", "Jemputan sekolah", "Kereta api", "Ojek", "Andong/Bendi/Sado/Kuda", "Perahu penyeberangan", "Lainnya"], required: true },
   
   { id: "header_sekolah", label: "DATA SEKOLAH ASAL", type: "header" },
-  { id: "NPSN Sekolah", label: "NPSN Sekolah Asal", type: "number", required: true },
+  { id: "NPSN Sekolah", label: "NPSN Sekolah Asal (Wajib 8 Digit)", type: "number", required: true },
   { id: "Asal Sekolah", label: "Nama Sekolah Asal (SD/MI)", type: "text", required: true },
   
   { id: "header_ortu", label: "DATA ORANG TUA / WALI", type: "header" },
@@ -78,11 +78,11 @@ const DEFAULT_SETTINGS = {
     deskripsi: "Mencetak generasi penerus bangsa yang cerdas, berakhlak mulia, dan siap menghadapi tantangan masa depan dengan pendidikan berkualitas.",
   statusPendaftaran: "Buka",
   logoSekolah: "https://iili.io/3tdgMhb.png",
-  kopSurat: "https://i.imgur.com/SQXhbqP.png",
+  kopSurat: "",
   namaKepalaSekolah: "SITI HAJIJA TEMONGMERE, S.Pd.,M.Pd",
   nipKepalaSekolah: "19750728 200008 2 001",
-  tandaTanganKepalaSekolah: "https://i.imgur.com/8Mp6PsB.jpeg",
-  stempelSekolah: "https://i.imgur.com/HIJepBI.jpeg",
+  tandaTanganKepalaSekolah: "",
+  stempelSekolah: "",
   fotoKepalaSekolah: "https://i.imgur.com/9wlgK8w.png",
   sambutanKepalaSekolah: "Selamat datang di website resmi SPMB SMP NEGERI 4 FAKFAK. Kami berkomitmen untuk memberikan pelayanan pendidikan terbaik bagi putra-putri Anda. Mari bergabung bersama kami untuk mencetak generasi penerus bangsa yang cerdas, berakhlak mulia, dan berprestasi.",
   koordinatSekolah: "-2.9595913880821785, 132.3518155747581",
@@ -91,7 +91,7 @@ const DEFAULT_SETTINGS = {
   nomorSurat: "421.3/ /2026",
   tempatSurat: "Fakfak",
   tanggalSurat: "",
-  catatanTambahan: "Harap Bawa Materai Rp. 10.000 Pada Saat Daftar Ulang",
+  catatanTambahan: "",
   gambarHeaderBeranda: "https://i.imgur.com/dyUirbi.jpeg",
   visiSekolah: "TERWUJUDNYA PESERTA DIDIK YANG BERIMAN, BERTAKWA KEPADA TUHAN YANG MAHA ESA DAN MEMILIKI CIPTA, RASA, KARSA YANG BERKARAKTER PANCASILA",
   misiSekolah: "1. Mengembangkan keimanan dan ketaqwaan Terhadap Tuhan Yang Maha Esa.\n2. Mengembangkan sikap Disiplin, jujur, mandiri dan bertanggungjawab berdasarkan nilai-nilai Pancasila serta budaya kearifan lokal.\n3. Mengembangkan sikap salam, senyum, sapa, sopan dan santun (5S)\n4. Mengembangkan kegiatan literasi dan numerasi peserta didik.\n5. Mengembangkan Ilmu pengetahuan dan teknologi di lingkungan sekolah.",
@@ -348,13 +348,22 @@ function getSchoolInfo(npsn) {
           if (result.data.satuanPendidikan && result.data.satuanPendidikan.nama) {
             schoolName = result.data.satuanPendidikan.nama;
           } else if (Array.isArray(result.data) && result.data.length > 0) {
-            schoolName = result.data[0].nama || result.data[0].sekolah;
+            schoolName = result.data[0].nama || result.data[0].sekolah || result.data[0].nama_sekolah;
+          } else if (typeof result.data === 'object') {
+            schoolName = result.data.nama || result.data.sekolah || result.data.nama_sekolah || result.data.nama_satuan_pendidikan;
           }
-        } else if (result && result.status === "success" && result.data && result.data.length > 0) {
-          schoolName = result.data[0].sekolah || result.data[0].nama;
+        } else if (result && result.status === "success" && result.data) {
+          if (Array.isArray(result.data) && result.data.length > 0) {
+            schoolName = result.data[0].sekolah || result.data[0].nama;
+          } else {
+            schoolName = result.data.sekolah || result.data.nama;
+          }
         }
 
-        if (schoolName) break;
+        if (schoolName) {
+          schoolName = schoolName.toUpperCase();
+          break;
+        }
       } catch (e) {
         continue;
       }
