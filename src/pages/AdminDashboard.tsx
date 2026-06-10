@@ -777,7 +777,7 @@ export default function AdminDashboard() {
                         type="text"
                         value={localSettings.namaKepalaSekolah || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, namaKepalaSekolah: e.target.value })}
-                        className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
+                        className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                         placeholder="Contoh: Drs. H. Ahmad, M.Pd."
                       />
                     </div>
@@ -788,7 +788,7 @@ export default function AdminDashboard() {
                         type="text"
                         value={localSettings.nipKepalaSekolah || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, nipKepalaSekolah: e.target.value })}
-                        className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
+                        className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                       />
                     </div>
 
@@ -798,7 +798,7 @@ export default function AdminDashboard() {
                         type="url"
                         value={localSettings.fotoKepalaSekolah || ''}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLocalSettings({ ...localSettings, fotoKepalaSekolah: e.target.value })}
-                        className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
+                        className={cn("w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none", isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-white border-slate-300")}
                         placeholder="https://..."
                       />
                     </div>
