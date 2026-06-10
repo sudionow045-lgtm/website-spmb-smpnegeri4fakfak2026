@@ -50,22 +50,46 @@ export default function AdminDashboard() {
   const getFieldValue = useCallback((item: any, fieldName: string): string => {
     if (!item) return '';
     
+    // Direct matches
+    if (item[fieldName] !== undefined && item[fieldName] !== null) {
+      const val = String(item[fieldName]).trim();
+      if (val) return val;
+    }
+
+    // Case-insensitive variations
     const variations = [
       fieldName,
       fieldName.toLowerCase(),
+      fieldName.toUpperCase(),
       fieldName.replace(/\s+/g, '_'),
       fieldName.replace(/\s+/g, ''),
+      fieldName.replace(/\s+/g, '_').toLowerCase(),
+      fieldName.replace(/\s+/g, '').toLowerCase(),
+      fieldName.replace(/[()]/g, ''),
+      fieldName.replace(/[()]/g, '').toLowerCase(),
     ];
 
     for (const variation of variations) {
       if (item[variation] !== undefined && item[variation] !== null) {
-        return String(item[variation]).trim();
+        const val = String(item[variation]).trim();
+        if (val) return val;
       }
     }
 
+    // Key-based search (case insensitive)
     for (const key of Object.keys(item)) {
-      if (key.toLowerCase() === fieldName.toLowerCase()) {
-        return String(item[key]).trim();
+      if (key && key.toLowerCase() === fieldName.toLowerCase()) {
+        const val = String(item[key]).trim();
+        if (val) return val;
+      }
+    }
+
+    // Partial matching for complex field names
+    const fieldLower = fieldName.toLowerCase();
+    for (const key of Object.keys(item)) {
+      if (key && key.toLowerCase().includes(fieldLower) && item[key]) {
+        const val = String(item[key]).trim();
+        if (val) return val;
       }
     }
 
@@ -221,7 +245,7 @@ export default function AdminDashboard() {
     // 4. Data Table
     const tableData = [
       ['No. Pendaftaran', ': ' + (student['No Pendaftaran'] || '-')],
-      ['Nama Lengkap', ': ' + (getFieldValue(student, 'Nama Lengkap') || student['Nama Lengkap'] || student['Nama Lengkap (Sesuai Ijazah/Akta)'] || '-')],
+      ['Nama Lengkap', ': ' + (getFieldValue(student, 'Nama Lengkap') || getFieldValue(student, 'nama') || student['Nama Lengkap'] || student['Nama Lengkap (Sesuai Ijazah/Akta)'] || '-')],
       ['NISN', ': ' + (getFieldValue(student, 'NISN') || student['NISN'] || '-')],
       ['NIK', ': ' + (getFieldValue(student, 'NIK') || student['NIK'] || '-')],
       ['Tempat, Tgl Lahir', ': ' + (getFieldValue(student, 'Tempat Lahir') || '-') + ', ' + formatDateStr(getFieldValue(student, 'Tanggal Lahir'))],
@@ -279,8 +303,8 @@ export default function AdminDashboard() {
 
   const filteredData = useMemo(() => {
     return data.filter((item: AdminData) => {
-      const nama = getFieldValue(item, 'Nama Lengkap') || '';
-      const nik = getFieldValue(item, 'NIK') || '';
+      const nama = getFieldValue(item, 'Nama Lengkap') || getFieldValue(item, 'nama') || '';
+      const nik = getFieldValue(item, 'NIK') || getFieldValue(item, 'nik') || '';
       const noPendaftaran = item['No Pendaftaran'] || '';
       
       const matchesSearch = nama.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -472,9 +496,6 @@ export default function AdminDashboard() {
                     ) : (
                       paginatedData.map((item: AdminData, idx: number) => (
                         <tr
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.2, delay: idx * 0.05 }}
                           key={item['No Pendaftaran']}
                           className={cn("hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors")}
                         >
@@ -482,11 +503,11 @@ export default function AdminDashboard() {
                             {item['No Pendaftaran']}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium">{getFieldValue(item, 'Nama Lengkap') || '-'}</div>
-                            <div className={cn("text-xs", isDarkMode ? "text-slate-400" : "text-slate-500")}>{getFieldValue(item, 'Tempat Lahir') || '-'}, {formatDate(getFieldValue(item, 'Tanggal Lahir'))}</div>
+                            <div className="text-sm font-medium">{getFieldValue(item, 'Nama Lengkap') || getFieldValue(item, 'nama') || '-'}</div>
+                            <div className={cn("text-xs", isDarkMode ? "text-slate-400" : "text-slate-500")}>{getFieldValue(item, 'Tempat Lahir') || '-'}, {formatDate(getFieldValue(item, 'Tanggal Lahir') || '')}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            {calculateAge(getFieldValue(item, 'Tanggal Lahir'), settings?.tanggalCutoffUsia)}
+                            {calculateAge(getFieldValue(item, 'Tanggal Lahir') || '', settings?.tanggalCutoffUsia)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             {formatDate(settings?.tanggalCutoffUsia || '')}
@@ -495,23 +516,23 @@ export default function AdminDashboard() {
                             {getFieldValue(item, 'Jarak Rumah Dengan Sekolah') || item['Jarak ke Sekolah (km)'] ? `${getFieldValue(item, 'Jarak Rumah Dengan Sekolah') || item['Jarak ke Sekolah (km)']} km` : '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-mono">
-                            {getFieldValue(item, 'NIK') || '-'}
+                            {getFieldValue(item, 'NIK') || getFieldValue(item, 'nik') || '-'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             {getStatusBadge(item.Status)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex items-center justify-end gap-2">
-                              <button onClick={() => setSelectedStudent(item)} className="text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 px-2 py-1 rounded transition-colors" title="Lihat Detail">
+                              <button onClick={() => setSelectedStudent(item)} className="text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:text-slate-100 p-2 rounded transition-colors">
                                 <Eye size={18} />
                               </button>
                               {item.Status !== 'Lulus' && (
-                                <button onClick={() => handleUpdateStatus(item['No Pendaftaran'], 'Lulus')} className="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/50 px-2 py-1 rounded transition-colors" title="Ubah ke Lulus">
+                                <button onClick={() => handleUpdateStatus(item['No Pendaftaran'], 'Lulus')} className="text-green-600 hover:text-green-900 bg-green-50 hover:bg-green-100 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 p-2 rounded transition-colors">
                                   <CheckCircle size={18} />
                                 </button>
                               )}
                               {item.Status !== 'Tidak Lulus' && (
-                                <button onClick={() => handleUpdateStatus(item['No Pendaftaran'], 'Tidak Lulus')} className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50 px-2 py-1 rounded transition-colors" title="Ubah ke Tidak Lulus">
+                                <button onClick={() => handleUpdateStatus(item['No Pendaftaran'], 'Tidak Lulus')} className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 p-2 rounded transition-colors">
                                   <XCircle size={18} />
                                 </button>
                               )}
@@ -587,7 +608,7 @@ export default function AdminDashboard() {
                                 alt="Foto siswa"
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
-                                  e.currentTarget.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(getFieldValue(selectedStudent, 'Nama Lengkap') || 'Siswa') + '&background=random&size=200';
+                                  e.currentTarget.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(getFieldValue(selectedStudent, 'Nama Lengkap') || 'Siswa') + '&background=random&size=400';
                                 }}
                                 style={{
                                   imageRendering: 'auto',
@@ -609,13 +630,13 @@ export default function AdminDashboard() {
 
                     {/* Info */}
                     <div className="space-y-4">
-                      <h3 className="font-bold text-lg leading-tight mb-1">{getFieldValue(selectedStudent, 'Nama Lengkap') || 'Nama Tidak Tersedia'}</h3>
-                      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">NIK: {getFieldValue(selectedStudent, 'NIK') || '-'}</p>
+                      <h3 className="font-bold text-lg leading-tight mb-1">{getFieldValue(selectedStudent, 'Nama Lengkap') || getFieldValue(selectedStudent, 'nama') || 'Nama Tidak Tersedia'}</h3>
+                      <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">NIK: {getFieldValue(selectedStudent, 'NIK') || getFieldValue(selectedStudent, 'nik') || '-'}</p>
 
                       <div className="grid grid-cols-2 gap-2 text-left">
                         <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                           <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Usia</p>
-                          <p className="text-xs font-bold truncate">{calculateAge(getFieldValue(selectedStudent, 'Tanggal Lahir'), settings?.tanggalCutoffUsia).split(' ')[0]} Thn</p>
+                          <p className="text-xs font-bold truncate">{calculateAge(getFieldValue(selectedStudent, 'Tanggal Lahir') || '', settings?.tanggalCutoffUsia).split(' ')[0]} Thn</p>
                         </div>
                         <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                           <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">NISN</p>
@@ -627,7 +648,7 @@ export default function AdminDashboard() {
                         </div>
                         <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                           <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Tanggal Lahir</p>
-                          <p className="text-xs font-bold truncate">{formatDate(getFieldValue(selectedStudent, 'Tanggal Lahir'))}</p>
+                          <p className="text-xs font-bold truncate">{formatDate(getFieldValue(selectedStudent, 'Tanggal Lahir') || '')}</p>
                         </div>
                         <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
                           <p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">Jarak</p>
