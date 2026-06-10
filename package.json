@@ -1,14 +1,16 @@
 {
-  "name": "react-example",
+  "name": "website-spmb-smpnegeri4fakfak",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Platform website SPSB SMPN 4 Fakfak 2026",
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
-    "build": "vite build",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
@@ -40,5 +42,15 @@
     "tsx": "^4.21.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
-  }
+  },
+  "keywords": [
+    "react",
+    "vite",
+    "typescript",
+    "tailwindcss",
+    "spmb",
+    "penerimaan-siswa"
+  ],
+  "author": "sudionow045-lgtm",
+  "license": "MIT"
 }
