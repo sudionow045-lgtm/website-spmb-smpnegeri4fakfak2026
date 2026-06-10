@@ -494,7 +494,7 @@ export default function AdminDashboard() {
                         </td>
                       </tr>
                     ) : (
-                      paginatedData.map((item: AdminData, idx: number) => (
+                      paginatedData.map((item: AdminData) => (
                         <tr
                           key={item['No Pendaftaran']}
                           className={cn("hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors")}
@@ -504,7 +504,9 @@ export default function AdminDashboard() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium">{getFieldValue(item, 'Nama Lengkap') || getFieldValue(item, 'nama') || '-'}</div>
-                            <div className={cn("text-xs", isDarkMode ? "text-slate-400" : "text-slate-500")}>{getFieldValue(item, 'Tempat Lahir') || '-'}, {formatDate(getFieldValue(item, 'Tanggal Lahir') || '')}</div>
+                            <div className={cn("text-xs", isDarkMode ? "text-slate-400" : "text-slate-500")}>
+                              {getFieldValue(item, 'Tempat Lahir') || '-'}, {formatDate(getFieldValue(item, 'Tanggal Lahir') || '')}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             {calculateAge(getFieldValue(item, 'Tanggal Lahir') || '', settings?.tanggalCutoffUsia)}
